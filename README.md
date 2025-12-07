@@ -1,347 +1,194 @@
 # 🎓 Sistema de Seguimiento de Alumnos
 
-Sistema de seguimiento y detección temprana de riesgo de deserción para Tecnicaturas Superiores.
+Sistema web para el seguimiento académico de estudiantes, diseñado para facilitar el registro de clases, asistencia, participación, trabajos prácticos y análisis de rendimiento individual.
 
-> ## ⚠️ ADVERTENCIA IMPORTANTE - Base de Datos Efímera en Vercel
-> 
-> **Si desplegás esta aplicación en Vercel con SQLite:**
-> - ❌ **TODOS LOS DATOS SE BORRAN** en cada nuevo despliegue
-> - ❌ **Los archivos cargados NO PERSISTEN** (se pierden al reiniciar)
-> - ❌ **Los cambios en la BD NO SE GUARDAN** permanentemente
-> 
-> **¿Por qué?** Vercel usa contenedores efímeros. SQLite se guarda en `/tmp` que se borra constantemente.
-> 
-> **Soluciones:**
-> - ✅ **Para desarrollo/demos**: Usar SQLite (está bien que sea efímero)
-> - ✅ **Para producción**: Migrar a PostgreSQL (ver [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md))
-> - ✅ **Para archivos**: Usar almacenamiento externo (Vercel Blob, S3, Cloudinary)
->
-> 📖 **Lee la advertencia completa**: [ADVERTENCIA_DATOS_EFIMEROS.md](./ADVERTENCIA_DATOS_EFIMEROS.md)
+## 🚀 Características Principales
 
-## 📋 Descripción
+- ✅ **Dashboard Multi-Clase**: Vista general de todos los cursos con estadísticas en tiempo real
+- ✅ **Registro Completo de Clase**: Asistencia, participación, TPs, notas y actitud
+- ✅ **Ficha Individual de Alumno**: Historial completo con indicadores de rendimiento
+- ✅ **Alertas Automáticas**: Detección de alumnos en riesgo
+- ✅ **Búsqueda y Filtros**: Encuentra rápidamente alumnos y clases
+- ✅ **Diseño Responsive**: Funciona en desktop, tablet y móvil
 
-Esta aplicación permite a docentes y coordinadores de Tecnicaturas Superiores:
+## 🛠️ Tecnologías
 
-- ✅ Registrar asistencia, participación y entregas de trabajos prácticos clase por clase
-- 📊 Calcular automáticamente indicadores de riesgo de deserción
-- 🚨 Generar alertas tempranas para intervención oportuna
-- 📈 Consultar fichas completas de alumnos con historial académico
+### Frontend
+- HTML5, CSS3, JavaScript (Vanilla)
+- Diseño moderno con gradientes y animaciones
+- SPA (Single Page Application)
 
-### Problema que Resuelve
+### Backend
+- Python 3.12
+- PostgreSQL (Neon Database)
+- Vercel Serverless Functions
 
-Las Tecnicaturas Superiores enfrentan tasas de deserción del 40-60% en los primeros años. El seguimiento tradicional (solo con notas de parciales) detecta el riesgo **demasiado tarde**. Este sistema permite:
-
-- **Detección temprana**: Identificar señales de alerta desde las primeras semanas
-- **Seguimiento continuo**: Registrar datos clase por clase
-- **Visión integral**: Combinar múltiples indicadores (asistencia, participación, TPs)
-- **Intervención oportuna**: Actuar antes de que sea irreversible
-
-## 🏗️ Arquitectura
-
-El sistema está construido con **arquitectura por capas** siguiendo principios SOLID:
-
-```
-┌─────────────────────────────────────────────┐
-│  📡 API (FastAPI)                            │
-│  - Endpoints REST                            │
-│  - Validación con Pydantic                   │
-└───────────────────┬─────────────────────────┘
-                    │
-┌───────────────────▼─────────────────────────┐
-│  ⚙️  Servicios de Aplicación                │
-│  - Casos de uso                              │
-│  - Orquestación                              │
-└───────────────────┬─────────────────────────┘
-                    │
-┌───────────────────▼─────────────────────────┐
-│  🎯 Dominio                                  │
-│  - Entidades (Alumno, Curso, etc.)           │
-│  - Reglas de negocio                         │
-└───────────────────┬─────────────────────────┘
-                    │
-┌───────────────────▼─────────────────────────┐
-│  🗄️  Repositorios (SQLite)                  │
-│  - Persistencia                              │
-│  - Patrón Repository                         │
-└───────────────────┬─────────────────────────┘
-                    │
-┌───────────────────▼─────────────────────────┐
-│  💾 SQLite Database                          │
-└─────────────────────────────────────────────┘
-```
-
-### Tecnologías
-
-- **Backend**: Python 3.11+
-- **Framework Web**: FastAPI
-- **Base de Datos (MVP)**: SQLite
-- **Validación**: Pydantic
-- **Despliegue**: Vercel (serverless)
-
-## 🚀 Inicio Rápido
+## 📦 Instalación y Despliegue
 
 ### Requisitos Previos
+- Cuenta en [Vercel](https://vercel.com)
+- Cuenta en [GitHub](https://github.com)
+- Node.js instalado (para Vercel CLI)
 
-- Python 3.11 o superior
-- pip (gestor de paquetes de Python)
+### Despliegue en Vercel
 
-### Instalación
+1. **Fork o Clone el repositorio**
+   ```bash
+   git clone https://github.com/tu-usuario/seguimiento-alumnos.git
+   cd seguimiento-alumnos
+   ```
 
-1. **Clonar el repositorio** (o descargar el código)
+2. **Conectar con Vercel**
+   - Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
+   - Click en "Import Project"
+   - Selecciona tu repositorio
+   - Click en "Deploy"
 
-```bash
-cd "app seguimiento de alumnos"
+3. **Configurar Base de Datos**
+   - En Vercel Dashboard → Storage → Create Database
+   - Selecciona "Neon (Postgres)"
+   - Conecta la BD a tu proyecto
+   - Ejecuta el SQL de inicialización (ver `docs/CREAR_BD_WEB.md`)
+
+4. **Verificar**
+   - Abre tu URL de Vercel
+   - Deberías ver el dashboard con las clases
+
+## 📚 Documentación
+
+### Documentos Esenciales (Raíz)
+- **[README.md](README.md)** - Este archivo
+- **[REGISTRO_COMPLETO.md](REGISTRO_COMPLETO.md)** - Guía de uso del registro de clase
+
+### Documentación Completa (docs/)
+- **[GUIA_USO_COMPLETA.md](docs/GUIA_USO_COMPLETA.md)** - Manual de usuario completo
+- **[CREAR_BD_WEB.md](docs/CREAR_BD_WEB.md)** - Cómo crear la base de datos
+- **[IMPLEMENTACION_POSTGRES.md](docs/IMPLEMENTACION_POSTGRES.md)** - Detalles técnicos de PostgreSQL
+- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Solución de problemas comunes
+
+## 🎯 Uso Rápido
+
+### 1. Registrar una Clase
+
+1. Click en **"Registrar Clase"**
+2. Selecciona materia y cohorte
+3. Ingresa fecha y tema
+4. Click en **"Iniciar Registro"**
+5. Para cada alumno, marca:
+   - ✅ Asistencia (Presente/Ausente/Tarde)
+   - 📊 Participación (Alta/Media/Baja/Nula)
+   - 📝 TP Entregado (Sí/No) + Nota
+   - 😊 Actitud (Excelente/Buena/Regular/Mala)
+   - 💬 Observaciones (opcional)
+6. Click en **"Guardar y Finalizar"**
+
+### 2. Ver Ficha de Alumno
+
+1. Click en **"Alumnos"**
+2. Busca el alumno
+3. Click en su nombre
+4. Verás:
+   - Historial de clases
+   - Indicadores de rendimiento
+   - Alertas activas
+
+### 3. Ver Alertas
+
+1. Click en **"Alertas"** (🔔)
+2. Verás alumnos con:
+   - 2 faltas consecutivas
+   - Asistencia < 70%
+   - Bajo rendimiento en TPs
+
+## 📊 Estructura del Proyecto
+
+```
+seguimiento-alumnos/
+├── api/                    # Backend Python
+│   ├── index.py           # API principal
+│   └── db.py              # Conexión a PostgreSQL
+├── public/                # Frontend
+│   ├── index.html         # HTML principal
+│   ├── app.js             # Lógica JavaScript
+│   └── styles.css         # Estilos CSS
+├── docs/                  # Documentación
+│   ├── GUIA_USO_COMPLETA.md
+│   ├── CREAR_BD_WEB.md
+│   └── ...
+├── scripts/               # Scripts de utilidad
+│   └── migrate_to_postgres.py
+├── src/                   # Código fuente (dominio)
+│   ├── domain/
+│   └── infrastructure/
+├── vercel.json            # Configuración de Vercel
+├── requirements.txt       # Dependencias Python
+└── README.md              # Este archivo
 ```
 
-2. **Crear entorno virtual** (recomendado)
+## 🔧 Desarrollo Local
 
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-3. **Instalar dependencias**
-
+### Instalar Dependencias
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Inicializar base de datos**
-
+### Ejecutar Localmente
 ```bash
-python scripts/init_db.py
+# Opción 1: Servidor Python simple
+python -m http.server 8000
+
+# Opción 2: Vercel Dev
+vercel dev
 ```
 
-5. **Cargar datos de ejemplo** (opcional)
+Abre: http://localhost:8000
 
-```bash
-python scripts/seed_data.py
-```
+## 🤝 Contribuir
 
-6. **Ejecutar la aplicación**
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Add: nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
 
-```bash
-# Opción 1: Usando uvicorn directamente
-uvicorn src.presentation.api.main:app --reload --host 0.0.0.0 --port 8000
+## 📝 Variables Registradas por Alumno
 
-# Opción 2: Ejecutando el archivo main.py
-python src/presentation/api/main.py
-```
+Por cada clase, se registra:
 
-7. **Acceder a la API**
+| Variable | Tipo | Valores |
+|----------|------|---------|
+| Asistencia | Obligatorio | Presente / Ausente / Tarde |
+| Participación | Opcional | Alta / Media / Baja / Nula |
+| TP Entregado | Opcional | Sí / No |
+| Nota TP | Opcional | 1-10 (con decimales) |
+| Actitud | Opcional | Excelente / Buena / Regular / Mala |
+| Observaciones | Opcional | Texto libre |
 
-- **Swagger UI (Documentación interactiva)**: http://localhost:8000/docs
-- **ReDoc (Documentación alternativa)**: http://localhost:8000/redoc
-- **API Base**: http://localhost:8000
+## 🎨 Capturas de Pantalla
 
-## 📚 Documentación
+### Dashboard
+Vista general de todas las clases con estadísticas.
 
-La documentación completa del proyecto está en la carpeta `docs/`:
+### Registro de Clase
+Interfaz para registrar asistencia y variables por alumno.
 
-- **[README.md](docs/README.md)** - Índice de documentación
-- **[01_CONTEXTO_Y_REQUISITOS.md](docs/01_CONTEXTO_Y_REQUISITOS.md)** - Contexto, objetivos y requisitos
-- **[02_CASOS_DE_USO_Y_STORIES.md](docs/02_CASOS_DE_USO_Y_STORIES.md)** - Casos de uso y user stories
-- **[03_MODELO_Y_API.md](docs/03_MODELO_Y_API.md)** - Modelo de dominio, API y diagramas UML
-- **[04_ESTRUCTURA_Y_TRAZABILIDAD.md](docs/04_ESTRUCTURA_Y_TRAZABILIDAD.md)** - Estructura del proyecto y trazabilidad
-
-## 🔌 Endpoints Principales
-
-### Alumnos
-
-- `POST /alumnos` - Crear alumno
-- `GET /alumnos/{id}` - Obtener alumno
-- `GET /alumnos` - Listar alumnos (con filtros y paginación)
-- `PUT /alumnos/{id}` - Actualizar alumno
-- `DELETE /alumnos/{id}` - Eliminar alumno
-
-### Próximamente
-
-- Cursos (`/cursos`)
-- Clases (`/clases`)
-- Asistencias (`/asistencias`)
-- Participaciones (`/participaciones`)
-- Trabajos Prácticos (`/trabajos-practicos`)
-- Alertas (`/alertas/alumnos-en-riesgo`)
-
-## 🧪 Testing
-
-```bash
-# Ejecutar tests unitarios
-pytest tests/unit
-
-# Ejecutar tests de integración
-pytest tests/integration
-
-# Ejecutar todos los tests con coverage
-pytest --cov=src tests/
-```
-
-## � Despliegue en Vercel
-
-El sistema está preparado para desplegarse en Vercel como función serverless.
-
-### Opción 1: Despliegue desde GitHub (Recomendado)
-
-1. Subir el proyecto a GitHub
-2. Importar en Vercel desde el dashboard
-3. Vercel detectará automáticamente la configuración
-4. ¡Listo! Tu API estará en línea
-
-### Opción 2: Despliegue con Vercel CLI
-
-```bash
-# Instalar Vercel CLI
-npm install -g vercel
-
-# Iniciar sesión
-vercel login
-
-# Desplegar
-vercel
-
-# Desplegar a producción
-vercel --prod
-```
-
-### 📖 Guía Completa
-
-Ver [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md) para instrucciones detalladas, configuración avanzada y troubleshooting.
-
-### ⚠️ IMPORTANTE: SQLite en Vercel es EFÍMERO
-
-**🚨 ADVERTENCIA CRÍTICA:**
-
-Cuando desplegás en Vercel con SQLite:
-
-1. **Cada despliegue = Base de datos NUEVA y VACÍA**
-   - Si hacés cambios en el código y redespliegás → Se pierden TODOS los datos
-   - Si Vercel reinicia el contenedor → Se pierden TODOS los datos
-   
-2. **Los datos NO persisten entre requests**
-   - Cada función serverless puede tener su propia copia de `/tmp`
-   - Los datos que guardás pueden no estar disponibles en el próximo request
-   
-3. **NO usar para datos importantes**
-   - ❌ NO guardar datos de alumnos reales
-   - ❌ NO usar como base de datos de producción
-   - ❌ NO esperar que los datos se mantengan
-
-**✅ Casos de uso válidos con SQLite en Vercel:**
-- Demos y presentaciones (los datos se resetean automáticamente)
-- Testing de la API (cada test inicia limpio)
-- Desarrollo y pruebas (no importa perder los datos)
-
-**✅ Para producción REAL:**
-- **Migrar a PostgreSQL** (Vercel Postgres, Supabase, Neon, Railway)
-- Ver guía completa en [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md)
-- Los datos SÍ persistirán y estarán disponibles siempre
-
-
-## �📁 Estructura del Proyecto
-
-```
-app-seguimiento-alumnos/
-├── docs/                           # Documentación completa
-├── src/
-│   ├── domain/                     # Capa de Dominio
-│   │   ├── entities/               # Entidades (Alumno, Curso, etc.)
-│   │   ├── value_objects/          # Value Objects (IndicadorRiesgo, Enums)
-│   │   └── exceptions/             # Excepciones de dominio
-│   ├── application/                # Capa de Aplicación
-│   │   └── services/               # Servicios (casos de uso)
-│   ├── infrastructure/             # Capa de Infraestructura
-│   │   ├── database/               # Gestión de BD
-│   │   └── repositories/           # Repositorios (SQLite)
-│   └── presentation/               # Capa de Presentación
-│       └── api/                    # API FastAPI
-│           ├── routers/            # Endpoints
-│           └── schemas/            # Schemas Pydantic
-├── scripts/                        # Scripts de utilidad
-│   ├── init_db.py                  # Inicializar BD
-│   └── seed_data.py                # Cargar datos de ejemplo
-├── tests/                          # Tests
-├── requirements.txt                # Dependencias
-└── README.md                       # Este archivo
-```
-
-## 🎯 Decisiones de Diseño
-
-### 1. Arquitectura por Capas
-
-- **Domain**: Lógica de negocio pura, independiente de frameworks
-- **Application**: Casos de uso, orquestación
-- **Infrastructure**: Persistencia, acceso a datos
-- **Presentation**: API HTTP, validación de entrada
-
-### 2. Patrón Repository
-
-- Abstrae el acceso a datos
-- Permite cambiar de SQLite a PostgreSQL sin tocar lógica de negocio
-- Facilita testing con repositorios mock
-
-### 3. Inversión de Dependencias
-
-- Servicios dependen de interfaces, no de implementaciones
-- Inyección de dependencias con FastAPI
-- Bajo acoplamiento entre capas
-
-### 4. Validación en Múltiples Capas
-
-- **Pydantic**: Validación de entrada HTTP
-- **Entidades**: Validación de reglas de dominio
-- **Servicios**: Validación de reglas de negocio que requieren BD
-
-## 🔮 Roadmap
-
-### Fase 1: MVP Core ✅ (Completado)
-- ✅ Arquitectura por capas
-- ✅ CRUD de alumnos
-- ✅ API con FastAPI
-- ✅ Persistencia con SQLite
-
-### Fase 2: Funcionalidades Completas (En progreso)
-- ⏳ CRUD de cursos, clases, asistencias, participaciones, TPs
-- ⏳ Cálculo de indicadores de riesgo
-- ⏳ Generación de alertas
-
-### Fase 3: Autenticación y Roles
-- 🔮 Sistema de login con JWT
-- 🔮 Roles: Docente, Coordinación, Estudiante
-- 🔮 Permisos por rol (RBAC)
-
-### Fase 4: Frontend Web
-- 🔮 Interfaz web con React/Vue
-- 🔮 Dashboard de coordinación
-- 🔮 Portal de estudiantes
-
-### Fase 5: Funcionalidades Avanzadas
-- 🔮 Notificaciones automáticas
-- 🔮 Reportes y gráficos
-- 🔮 Predicción de riesgo con ML
-
-### Fase 6: Migración a PostgreSQL
-- 🔮 Cambio de SQLite a PostgreSQL
-- 🔮 Despliegue en servidor dedicado
-
-## 🤝 Contribuciones
-
-Este proyecto es de código abierto y está diseñado con fines educativos. Las contribuciones son bienvenidas.
+### Ficha de Alumno
+Historial completo con gráficos e indicadores.
 
 ## 📄 Licencia
 
-MIT License (pendiente de definir)
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 
-## 👥 Contacto
+## 👥 Autores
 
-**Equipo de Desarrollo**
-- Email: dev@seguimiento-alumnos.edu
+- **Cynthia Villagra** - Desarrollo inicial
+
+## 🙏 Agradecimientos
+
+- Diseño inspirado en plataformas educativas modernas
+- Iconos y emojis para mejorar la UX
+- Comunidad de Vercel por la documentación
 
 ---
 
-**Última actualización**: 2025-12-07  
-**Versión**: 1.0.0
+**¿Necesitas ayuda?** Lee la [Guía de Uso Completa](docs/GUIA_USO_COMPLETA.md) o consulta [Troubleshooting](docs/TROUBLESHOOTING.md).
