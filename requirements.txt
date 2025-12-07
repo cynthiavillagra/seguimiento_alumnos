@@ -1,4 +1,2 @@
-# Dependencias mínimas para Vercel
-fastapi==0.109.0
-mangum==0.17.0
-pydantic==2.5.3
+# No se necesitan dependencias externas
+# La API está construida con Python puro (stdlib)
