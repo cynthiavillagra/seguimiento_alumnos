@@ -1,0 +1,48 @@
+# ============================================================================
+# Dependencias del Sistema de Seguimiento de Alumnos
+# ============================================================================
+
+# Framework Web
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Validación y Serialización
+pydantic==2.5.3
+pydantic[email]==2.5.3
+email-validator==2.1.0
+
+# Base de Datos
+# SQLite viene incluido en Python, no necesita instalación
+
+# CORS y Middleware
+python-jose[cryptography]==3.3.0  # Para JWT en futuras versiones
+passlib[bcrypt]==1.7.4  # Para hashing de passwords en futuras versiones
+
+# Utilidades
+python-dotenv==1.0.0  # Para variables de entorno
+
+# Testing (opcional, para desarrollo)
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0  # Cliente HTTP para tests de API
+
+# Desarrollo (opcional)
+black==24.1.1  # Formateador de código
+flake8==7.0.0  # Linter
+mypy==1.8.0  # Type checker
+
+# ============================================================================
+# Notas de Instalación
+# ============================================================================
+#
+# Instalación básica (solo runtime):
+#   pip install fastapi uvicorn pydantic email-validator python-dotenv
+#
+# Instalación completa (con desarrollo y testing):
+#   pip install -r requirements.txt
+#
+# Instalación para producción (sin dev dependencies):
+#   pip install fastapi uvicorn pydantic email-validator python-dotenv python-jose passlib
+#
+# ============================================================================
