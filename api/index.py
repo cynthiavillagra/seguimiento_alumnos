@@ -1,47 +1,38 @@
 """
-Entrypoint para Vercel Serverless Functions
-Sistema de Seguimiento de Alumnos
-
-⚠️ ADVERTENCIA: SQLite en Vercel es EFÍMERO
-Los datos se borran en cada despliegue.
-Para producción: Usar PostgreSQL.
+Entrypoint Ultra-Simple para Vercel
 """
 
-import sys
-import os
-from pathlib import Path
+from fastapi import FastAPI
+from mangum import Mangum
 
-# Agregar el directorio raíz al path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Crear app directamente aquí
+app = FastAPI(
+    title="Sistema de Seguimiento de Alumnos",
+    version="1.0.0"
+)
 
-# Configurar base de datos en /tmp (único directorio escribible en Vercel)
-os.environ["DATABASE_PATH"] = "/tmp/database.db"
+@app.get("/")
+def root():
+    """Endpoint raíz"""
+    return {
+        "status": "✅ API funcionando",
+        "message": "Sistema de Seguimiento de Alumnos",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
-# Importar FastAPI y Mangum
-try:
-    from mangum import Mangum
-    from src.presentation.api.main import app
-    
-    # Handler para Vercel
-    handler = Mangum(app, lifespan="off")
-    
-except Exception as e:
-    print(f"Error al importar la aplicación: {e}")
-    import traceback
-    traceback.print_exc()
-    
-    # Crear una app de fallback para debugging
-    from fastapi import FastAPI
-    
-    fallback_app = FastAPI()
-    
-    @fallback_app.get("/")
-    def root():
-        return {
-            "error": "Error al inicializar la aplicación",
-            "details": str(e),
-            "message": "Ver logs de Vercel para más detalles"
-        }
-    
-    handler = Mangum(fallback_app, lifespan="off")
+@app.get("/health")
+def health():
+    """Health check"""
+    return {
+        "status": "healthy",
+        "api": "running"
+    }
+
+@app.get("/ping")
+def ping():
+    """Ping simple"""
+    return {"ping": "pong"}
+
+# Handler para Vercel
+handler = Mangum(app, lifespan="off")
