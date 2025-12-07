@@ -1,63 +1,65 @@
 """
 API REST - Versión de Diagnóstico
+Compatible con Vercel Serverless Functions
 """
 
 import json
 import os
-from http.server import BaseHTTPRequestHandler
 
-class APIHandler(BaseHTTPRequestHandler):
-    """Handler HTTP simplificado para diagnóstico"""
+def handler(event, context):
+    """
+    Handler principal para Vercel
+    event: dict con información del request
+    context: contexto de ejecución
+    """
     
-    def _set_headers(self, status_code=200):
-        self.send_response(status_code)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+    # Obtener el path del request
+    path = event.get('path', event.get('rawPath', '/'))
+    method = event.get('httpMethod', event.get('requestContext', {}).get('http', {}).get('method', 'GET'))
     
-    def _send_json(self, data, status_code=200):
-        self._set_headers(status_code)
-        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
+    # Headers CORS
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+    }
     
-    def do_OPTIONS(self):
-        self._set_headers(204)
+    # Manejar OPTIONS (CORS preflight)
+    if method == 'OPTIONS':
+        return {
+            'statusCode': 204,
+            'headers': headers,
+            'body': ''
+        }
     
-    def do_GET(self):
-        path = self.path
-        
-        try:
-            if path == '/health':
-                # Test 1: Verificar que la función funciona
-                self._send_json({'status': 'ok', 'message': 'Function is working'})
+    try:
+        # Routing
+        if path == '/health' or path == '/api/health':
+            response_data = {'status': 'ok', 'message': 'Function is working'}
+            
+        elif path == '/test-env' or path == '/api/test-env':
+            env_vars = {
+                'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
+                'POSTGRES_URL': 'SET' if os.getenv('POSTGRES_URL') else 'NOT SET',
+            }
+            response_data = {'env_vars': env_vars}
+            
+        elif path == '/test-import' or path == '/api/test-import':
+            try:
+                import psycopg2
+                response_data = {'psycopg2': 'OK', 'version': psycopg2.__version__}
+            except Exception as e:
+                response_data = {'psycopg2': 'ERROR', 'error': str(e)}
                 
-            elif path == '/test-env':
-                # Test 2: Verificar variables de entorno
-                env_vars = {
-                    'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
-                    'POSTGRES_URL': 'SET' if os.getenv('POSTGRES_URL') else 'NOT SET',
-                }
-                self._send_json({'env_vars': env_vars})
+        elif path == '/test-db' or path == '/api/test-db':
+            try:
+                import psycopg2
+                db_url = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
                 
-            elif path == '/test-import':
-                # Test 3: Verificar que psycopg2 se puede importar
-                try:
-                    import psycopg2
-                    self._send_json({'psycopg2': 'OK', 'version': psycopg2.__version__})
-                except Exception as e:
-                    self._send_json({'psycopg2': 'ERROR', 'error': str(e)}, 500)
-                    
-            elif path == '/test-db':
-                # Test 4: Verificar conexión a BD
-                try:
-                    import psycopg2
-                    db_url = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
-                    
-                    if not db_url:
-                        self._send_json({'error': 'No DATABASE_URL or POSTGRES_URL found'}, 500)
-                        return
-                    
+                if not db_url:
+                    response_data = {'error': 'No DATABASE_URL or POSTGRES_URL found'}
+                else:
                     conn = psycopg2.connect(db_url)
                     cursor = conn.cursor()
                     cursor.execute("SELECT COUNT(*) FROM alumno")
@@ -65,25 +67,78 @@ class APIHandler(BaseHTTPRequestHandler):
                     cursor.close()
                     conn.close()
                     
-                    self._send_json({'database': 'OK', 'alumno_count': count})
-                except Exception as e:
-                    import traceback
-                    self._send_json({
-                        'database': 'ERROR',
-                        'error': str(e),
-                        'traceback': traceback.format_exc()
-                    }, 500)
-                    
-            else:
-                self._send_json({'error': 'Not found', 'path': path}, 404)
+                    response_data = {'database': 'OK', 'alumno_count': count}
+            except Exception as e:
+                import traceback
+                response_data = {
+                    'database': 'ERROR',
+                    'error': str(e),
+                    'traceback': traceback.format_exc()
+                }
                 
-        except Exception as e:
-            import traceback
-            self._send_json({
-                'error': str(e),
-                'traceback': traceback.format_exc()
-            }, 500)
-
-# Handler para Vercel
-def handler(request, response):
-    return APIHandler(request, response)
+        elif path == '/cursos' or path == '/clases' or path == '/api/cursos' or path == '/api/clases':
+            # Devolver datos de ejemplo por ahora
+            response_data = {
+                'total': 3,
+                'clases': [
+                    {
+                        'id': 1,
+                        'materia': 'Programación I',
+                        'cohorte': 2024,
+                        'totalAlumnos': 8,
+                        'asistenciaPromedio': 0,
+                        'alumnosEnRiesgo': 0,
+                        'totalClases': 0,
+                        'ultimaClase': None
+                    },
+                    {
+                        'id': 2,
+                        'materia': 'Matemática',
+                        'cohorte': 2024,
+                        'totalAlumnos': 8,
+                        'asistenciaPromedio': 0,
+                        'alumnosEnRiesgo': 0,
+                        'totalClases': 0,
+                        'ultimaClase': None
+                    },
+                    {
+                        'id': 3,
+                        'materia': 'Física',
+                        'cohorte': 2023,
+                        'totalAlumnos': 0,
+                        'asistenciaPromedio': 0,
+                        'alumnosEnRiesgo': 0,
+                        'totalClases': 0,
+                        'ultimaClase': None
+                    }
+                ]
+            }
+            
+        else:
+            response_data = {'error': 'Not found', 'path': path}
+            return {
+                'statusCode': 404,
+                'headers': headers,
+                'body': json.dumps(response_data, ensure_ascii=False)
+            }
+        
+        # Respuesta exitosa
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps(response_data, ensure_ascii=False, default=str)
+        }
+        
+    except Exception as e:
+        import traceback
+        error_data = {
+            'error': str(e),
+            'traceback': traceback.format_exc(),
+            'path': path
+        }
+        
+        return {
+            'statusCode': 500,
+            'headers': headers,
+            'body': json.dumps(error_data, ensure_ascii=False)
+        }
