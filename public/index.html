@@ -43,24 +43,44 @@
         <!-- Dashboard Page -->
         <div id="page-dashboard" class="page active">
             <div class="page-header">
-                <h1>Dashboard</h1>
-                <p class="subtitle">Resumen general del sistema</p>
+                <h1>Mis Clases</h1>
+                <p class="subtitle">Selecciona una clase para ver detalles o registrar asistencia</p>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Grid de Clases -->
+            <div id="clases-grid" class="clases-grid">
+                <!-- Se llena dinámicamente con JavaScript -->
+                <div class="loading-clases">
+                    <span style="font-size: 3rem;">⏳</span>
+                    <p>Cargando clases...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista de Clase Individual -->
+        <div id="page-clase-detalle" class="page">
+            <div class="page-header">
+                <button class="btn-back" onclick="showPage('dashboard')">← Volver al Dashboard</button>
+                <div>
+                    <h1 id="clase-detalle-titulo">Programación I - Cohorte 2024</h1>
+                    <p class="subtitle" id="clase-detalle-subtitulo">Última clase: 05/12/2024</p>
+                </div>
+            </div>
+
+            <!-- Estadísticas de la Clase -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon blue">👥</div>
                     <div class="stat-content">
-                        <div class="stat-value" id="total-alumnos">0</div>
-                        <div class="stat-label">Alumnos Activos</div>
+                        <div class="stat-value" id="clase-total-alumnos">0</div>
+                        <div class="stat-label">Alumnos</div>
                     </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-icon green">✅</div>
                     <div class="stat-content">
-                        <div class="stat-value">85%</div>
+                        <div class="stat-value" id="clase-asistencia">0%</div>
                         <div class="stat-label">Asistencia Promedio</div>
                     </div>
                 </div>
@@ -68,7 +88,7 @@
                 <div class="stat-card">
                     <div class="stat-icon orange">⚠️</div>
                     <div class="stat-content">
-                        <div class="stat-value">3</div>
+                        <div class="stat-value" id="clase-en-riesgo">0</div>
                         <div class="stat-label">Alumnos en Riesgo</div>
                     </div>
                 </div>
@@ -76,25 +96,25 @@
                 <div class="stat-card">
                     <div class="stat-icon purple">📚</div>
                     <div class="stat-content">
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">Cursos Activos</div>
+                        <div class="stat-value" id="clase-total-clases">0</div>
+                        <div class="stat-label">Clases Dictadas</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
+            <!-- Acciones Rápidas -->
             <div class="section">
                 <h2>Acciones Rápidas</h2>
                 <div class="actions-grid">
-                    <button class="action-btn" onclick="showPage('registro-clase')">
+                    <button class="action-btn" onclick="registrarClaseDirecta()">
                         <span class="action-icon">✍️</span>
                         <span>Registrar Clase</span>
                     </button>
-                    <button class="action-btn" onclick="showPage('alumnos')">
+                    <button class="action-btn" onclick="verAlumnosClase()">
                         <span class="action-icon">👥</span>
                         <span>Ver Alumnos</span>
                     </button>
-                    <button class="action-btn" onclick="showPage('alertas')">
+                    <button class="action-btn" onclick="verAlertasClase()">
                         <span class="action-icon">🚨</span>
                         <span>Ver Alertas</span>
                     </button>

@@ -1108,3 +1108,146 @@ body {
         gap: 0.5rem;
     }
 }
+
+/* ============================================================================
+   DASHBOARD MULTI-CLASE - Tarjetas de Clases
+   ============================================================================ */
+
+/* Grid de Clases */
+.clases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.loading-clases {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+}
+
+/* Tarjeta de Clase */
+.clase-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.clase-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+.clase-card-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.clase-card-materia {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.clase-card-cohorte {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.clase-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.clase-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.clase-stat-icon {
+    font-size: 1.25rem;
+    width: 2rem;
+    text-align: center;
+}
+
+.clase-stat-label {
+    color: var(--gray-600);
+    flex: 1;
+}
+
+.clase-stat-value {
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.clase-stat-value.danger {
+    color: var(--danger);
+}
+
+.clase-stat-value.warning {
+    color: var(--warning);
+}
+
+.clase-stat-value.success {
+    color: var(--success);
+}
+
+.clase-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.clase-card-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.875rem;
+}
+
+.clase-card-btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+}
+
+.clase-card-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.clase-card-btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.clase-card-btn-secondary:hover {
+    background: var(--gray-200);
+}
+
+/* Responsive para tarjetas de clases */
+@media (max-width: 768px) {
+    .clases-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .clase-card-actions {
+        flex-direction: column;
+    }
+}

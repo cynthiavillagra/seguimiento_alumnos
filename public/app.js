@@ -10,6 +10,8 @@ const API_URL = window.location.hostname.includes('vercel.app') ? '' : '/api';
 // Estado de la aplicación
 const state = {
     alumnos: [],
+    clases: [],
+    claseSeleccionada: null,
     currentPage: 'dashboard',
     claseActual: {
         materia: null,
@@ -109,26 +111,138 @@ function loadPageData(pageName) {
 
 async function loadDashboardData() {
     try {
-        const url = `${API_URL}/alumnos`;
-        console.log('Cargando desde:', url);
+        const url = `${API_URL}/clases`;
+        console.log('Cargando clases desde:', url);
 
         const response = await fetch(url);
         const data = await response.json();
 
-        console.log('Datos recibidos:', data);
+        console.log('Clases recibidas:', data);
 
-        const totalElement = document.getElementById('total-alumnos');
-        if (totalElement) {
-            const total = data.total || data.alumnos?.length || 0;
-            totalElement.textContent = total;
-            animateNumber(totalElement, 0, total, 1000);
-        }
+        state.clases = data.clases || [];
+        renderClasesCards(state.clases);
 
     } catch (error) {
-        console.error('Error al cargar dashboard:', error);
-        showToast('Error al cargar datos del dashboard', 'error');
+        console.error('Error al cargar clases:', error);
+        showToast('Error al cargar clases', 'error');
     }
 }
+
+function renderClasesCards(clases) {
+    const container = document.getElementById('clases-grid');
+
+    if (!clases || clases.length === 0) {
+        container.innerHTML = `
+            <div class="loading-clases">
+                <span style="font-size: 3rem;">📚</span>
+                <p>No hay clases registradas</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = clases.map(clase => `
+        <div class="clase-card" onclick="verClaseDetalle(${clase.id})">
+            <div class="clase-card-header">
+                <div class="clase-card-materia">${clase.materia}</div>
+                <div class="clase-card-cohorte">Cohorte ${clase.cohorte}</div>
+            </div>
+            <div class="clase-card-stats">
+                <div class="clase-stat">
+                    <span class="clase-stat-icon">👥</span>
+                    <span class="clase-stat-label">Alumnos</span>
+                    <span class="clase-stat-value">${clase.totalAlumnos}</span>
+                </div>
+                <div class="clase-stat">
+                    <span class="clase-stat-icon">📊</span>
+                    <span class="clase-stat-label">Asistencia</span>
+                    <span class="clase-stat-value ${clase.asistenciaPromedio >= 80 ? 'success' : clase.asistenciaPromedio >= 70 ? 'warning' : 'danger'}">${clase.asistenciaPromedio}%</span>
+                </div>
+                <div class="clase-stat">
+                    <span class="clase-stat-icon">🚨</span>
+                    <span class="clase-stat-label">En riesgo</span>
+                    <span class="clase-stat-value ${clase.alumnosEnRiesgo > 0 ? 'danger' : 'success'}">${clase.alumnosEnRiesgo}</span>
+                </div>
+                <div class="clase-stat">
+                    <span class="clase-stat-icon">📚</span>
+                    <span class="clase-stat-label">Clases</span>
+                    <span class="clase-stat-value">${clase.totalClases}</span>
+                </div>
+            </div>
+            <div class="clase-card-actions" onclick="event.stopPropagation()">
+                <button class="clase-card-btn clase-card-btn-primary" onclick="registrarClaseDirecta(${clase.id})">
+                    Registrar
+                </button>
+                <button class="clase-card-btn clase-card-btn-secondary" onclick="verClaseDetalle(${clase.id})">
+                    Ver Detalle
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function verClaseDetalle(claseId) {
+    const clase = state.clases.find(c => c.id === claseId);
+
+    if (!clase) {
+        showToast('Clase no encontrada', 'error');
+        return;
+    }
+
+    // Guardar clase actual
+    state.claseSeleccionada = clase;
+
+    // Actualizar título
+    document.getElementById('clase-detalle-titulo').textContent = `${clase.materia} - Cohorte ${clase.cohorte}`;
+    document.getElementById('clase-detalle-subtitulo').textContent = `Última clase: ${clase.ultimaClase}`;
+
+    // Actualizar stats
+    document.getElementById('clase-total-alumnos').textContent = clase.totalAlumnos;
+    document.getElementById('clase-asistencia').textContent = `${clase.asistenciaPromedio}%`;
+    document.getElementById('clase-en-riesgo').textContent = clase.alumnosEnRiesgo;
+    document.getElementById('clase-total-clases').textContent = clase.totalClases;
+
+    // Mostrar página
+    showPage('clase-detalle');
+}
+
+function registrarClaseDirecta(claseId) {
+    const clase = state.clases.find(c => c.id === claseId);
+
+    if (!clase) {
+        showToast('Clase no encontrada', 'error');
+        return;
+    }
+
+    // Pre-seleccionar materia y cohorte
+    state.claseSeleccionada = clase;
+
+    // Ir a página de registro
+    showPage('registro-clase');
+
+    // Pre-llenar formulario
+    document.getElementById('select-materia').value = clase.materia.toLowerCase().replace(' ', '');
+    document.getElementById('select-cohorte').value = clase.cohorte.toString();
+
+    showToast(`Registrando clase de ${clase.materia}`, 'info');
+}
+
+function verAlumnosClase() {
+    if (!state.claseSeleccionada) {
+        showToast('No hay clase seleccionada', 'error');
+        return;
+    }
+    showPage('alumnos');
+}
+
+function verAlertasClase() {
+    if (!state.claseSeleccionada) {
+        showToast('No hay clase seleccionada', 'error');
+        return;
+    }
+    showPage('alertas');
+}
+
 
 function animateNumber(element, start, end, duration) {
     const range = end - start;
@@ -633,3 +747,8 @@ window.guardarObservacion = guardarObservacion;
 window.guardarClase = guardarClase;
 window.cancelarRegistro = cancelarRegistro;
 window.aplicarFiltroFechas = aplicarFiltroFechas;
+// Nuevas funciones de clases
+window.verClaseDetalle = verClaseDetalle;
+window.registrarClaseDirecta = registrarClaseDirecta;
+window.verAlumnosClase = verAlumnosClase;
+window.verAlertasClase = verAlertasClase;

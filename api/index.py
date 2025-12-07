@@ -60,7 +60,8 @@ class APIHandler(BaseHTTPRequestHandler):
         - / : Info de la API
         - /health : Health check
         - /ping : Ping simple
-        - /alumnos : Listar alumnos (futuro)
+        - /clases : Listar clases del profesor
+        - /alumnos : Listar alumnos
         """
         parsed_path = urlparse(self.path)
         path = parsed_path.path
@@ -74,6 +75,8 @@ class APIHandler(BaseHTTPRequestHandler):
                 self._handle_ping()
             elif path == '/docs':
                 self._handle_docs()
+            elif path == '/clases':
+                self._handle_get_clases()
             elif path == '/alumnos':
                 self._handle_get_alumnos()
             else:
@@ -183,6 +186,47 @@ class APIHandler(BaseHTTPRequestHandler):
                     }
                 }
             ]
+        })
+    
+    def _handle_get_clases(self):
+        """Lista clases del profesor (por ahora, datos de ejemplo)"""
+        # TODO: Conectar con la base de datos
+        clases_ejemplo = [
+            {
+                'id': 1,
+                'materia': 'Programación I',
+                'cohorte': 2024,
+                'totalAlumnos': 30,
+                'asistenciaPromedio': 85,
+                'alumnosEnRiesgo': 3,
+                'totalClases': 12,
+                'ultimaClase': '2024-12-05'
+            },
+            {
+                'id': 2,
+                'materia': 'Matemática',
+                'cohorte': 2024,
+                'totalAlumnos': 28,
+                'asistenciaPromedio': 90,
+                'alumnosEnRiesgo': 1,
+                'totalClases': 10,
+                'ultimaClase': '2024-12-06'
+            },
+            {
+                'id': 3,
+                'materia': 'Física',
+                'cohorte': 2023,
+                'totalAlumnos': 25,
+                'asistenciaPromedio': 78,
+                'alumnosEnRiesgo': 5,
+                'totalClases': 15,
+                'ultimaClase': '2024-12-04'
+            }
+        ]
+        
+        self._send_json({
+            'total': len(clases_ejemplo),
+            'clases': clases_ejemplo
         })
     
     def _handle_get_alumnos(self):
