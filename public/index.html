@@ -510,6 +510,129 @@
         </div>
     </div>
 
+    <!-- Modal Editar Alumno -->
+    <div id="modal-editar-alumno" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Alumno</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-editar-alumno')">×</button>
+            </div>
+            <form id="form-editar-alumno" onsubmit="event.preventDefault(); guardarEdicionAlumno();">
+                <input type="hidden" id="edit-alumno-id">
+                <div class="form-group">
+                    <label for="edit-alumno-nombre">Nombre *</label>
+                    <input type="text" id="edit-alumno-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-alumno-apellido">Apellido *</label>
+                    <input type="text" id="edit-alumno-apellido" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-alumno-dni">DNI *</label>
+                    <input type="text" id="edit-alumno-dni" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-alumno-email">Email *</label>
+                    <input type="email" id="edit-alumno-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-alumno-cohorte">Cohorte *</label>
+                    <input type="number" id="edit-alumno-cohorte" required min="2020" max="2030">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-editar-alumno')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarEdicionAlumno()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Curso -->
+    <div id="modal-editar-curso" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Curso</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-editar-curso')">×</button>
+            </div>
+            <form id="form-editar-curso" onsubmit="event.preventDefault(); guardarEdicionCurso();">
+                <input type="hidden" id="edit-curso-id">
+                <div class="form-group">
+                    <label for="edit-curso-materia">Nombre de la Materia *</label>
+                    <input type="text" id="edit-curso-materia" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-curso-anio">Año *</label>
+                        <input type="number" id="edit-curso-anio" required min="2020" max="2030">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-curso-cuatrimestre">Cuatrimestre *</label>
+                        <select id="edit-curso-cuatrimestre" required>
+                            <option value="1">1er Cuatrimestre</option>
+                            <option value="2">2do Cuatrimestre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-curso-docente">Docente Responsable *</label>
+                    <input type="text" id="edit-curso-docente" required>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-editar-curso')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarEdicionCurso()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar TP -->
+    <div id="modal-editar-tp" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Trabajo Práctico</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-editar-tp')">×</button>
+            </div>
+            <form id="form-editar-tp" onsubmit="event.preventDefault(); guardarEdicionTP();">
+                <input type="hidden" id="edit-tp-id">
+                <div class="form-group">
+                    <label for="edit-tp-titulo">Título del TP *</label>
+                    <input type="text" id="edit-tp-titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tp-descripcion">Descripción</label>
+                    <textarea id="edit-tp-descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tp-fecha">Fecha de Entrega *</label>
+                    <input type="date" id="edit-tp-fecha" required>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-editar-tp')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarEdicionTP()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación -->
+    <div id="modal-confirmar-eliminar" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>⚠️ Confirmar Eliminación</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-confirmar-eliminar')">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="mensaje-confirmar-eliminar">¿Estás seguro de que deseas eliminar este elemento?</p>
+                <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-confirmar-eliminar')">Cancelar</button>
+                <button class="btn-danger" id="btn-confirmar-eliminar" onclick="confirmarEliminacion()">Sí,
+                    Eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toast-container"></div>
 

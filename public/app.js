@@ -979,3 +979,280 @@ window.mostrarModalCrearTP = mostrarModalCrearTP;
 window.cerrarModal = cerrarModal;
 window.crearCurso = crearCurso;
 window.crearTP = crearTP;
+
+// ========================================
+// FUNCIONES DE EDICIÓN Y ELIMINACIÓN
+// ========================================
+
+// Variable global para manejar confirmación de eliminación
+let accionEliminar = null;
+
+// EDITAR ALUMNO
+async function editarAlumno(id) {
+    try {
+        const response = await fetch(`{API_URL}/alumnos`);
+        const data = await response.json();
+        const alumno = data.alumnos.find(a => a.id === id);
+        
+        if (!alumno) {
+            showToast('Alumno no encontrado', 'error');
+            return;
+        }
+        
+        document.getElementById('edit-alumno-id').value = alumno.id;
+        document.getElementById('edit-alumno-nombre').value = alumno.nombre;
+        document.getElementById('edit-alumno-apellido').value = alumno.apellido;
+        document.getElementById('edit-alumno-dni').value = alumno.dni;
+        document.getElementById('edit-alumno-email').value = alumno.email;
+        document.getElementById('edit-alumno-cohorte').value = alumno.cohorte;
+        
+        showModal('modal-editar-alumno');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al cargar alumno', 'error');
+    }
+}
+
+async function guardarEdicionAlumno() {
+    const id = document.getElementById('edit-alumno-id').value;
+    const data = {
+        nombre: document.getElementById('edit-alumno-nombre').value.trim(),
+        apellido: document.getElementById('edit-alumno-apellido').value.trim(),
+        dni: document.getElementById('edit-alumno-dni').value.trim(),
+        email: document.getElementById('edit-alumno-email').value.trim(),
+        cohorte: parseInt(document.getElementById('edit-alumno-cohorte').value)
+    };
+    
+    try {
+        const response = await fetch(`/alumnos/`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            showToast('Alumno actualizado exitosamente', 'success');
+            cerrarModal('modal-editar-alumno');
+            loadAlumnos();
+        } else {
+            showToast(result.error || 'Error al actualizar alumno', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al actualizar alumno', 'error');
+    }
+}
+
+// EDITAR CURSO
+async function editarCurso(id) {
+    try {
+        const response = await fetch(`/cursos`);
+        const data = await response.json();
+        const curso = data.clases.find(c => c.id === id);
+        
+        if (!curso) {
+            showToast('Curso no encontrado', 'error');
+            return;
+        }
+        
+        document.getElementById('edit-curso-id').value = curso.id;
+        document.getElementById('edit-curso-materia').value = curso.materia;
+        document.getElementById('edit-curso-anio').value = curso.cohorte;
+        document.getElementById('edit-curso-cuatrimestre').value = curso.cuatrimestre;
+        document.getElementById('edit-curso-docente').value = curso.docente;
+        
+        showModal('modal-editar-curso');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al cargar curso', 'error');
+    }
+}
+
+async function guardarEdicionCurso() {
+    const id = document.getElementById('edit-curso-id').value;
+    const data = {
+        nombre_materia: document.getElementById('edit-curso-materia').value.trim(),
+        anio: parseInt(document.getElementById('edit-curso-anio').value),
+        cuatrimestre: parseInt(document.getElementById('edit-curso-cuatrimestre').value),
+        docente_responsable: document.getElementById('edit-curso-docente').value.trim()
+    };
+    
+    try {
+        const response = await fetch(`/cursos/`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            showToast('Curso actualizado exitosamente', 'success');
+            cerrarModal('modal-editar-curso');
+            loadDashboardData();
+        } else {
+            showToast(result.error || 'Error al actualizar curso', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al actualizar curso', 'error');
+    }
+}
+
+// EDITAR TP
+async function editarTP(id) {
+    try {
+        const response = await fetch(`/trabajos-practicos`);
+        const data = await response.json();
+        const tp = data.tps.find(t => t.id === id);
+        
+        if (!tp) {
+            showToast('TP no encontrado', 'error');
+            return;
+        }
+        
+        document.getElementById('edit-tp-id').value = tp.id;
+        document.getElementById('edit-tp-titulo').value = tp.titulo;
+        document.getElementById('edit-tp-descripcion').value = tp.descripcion || '';
+        document.getElementById('edit-tp-fecha').value = tp.fecha_entrega;
+        
+        showModal('modal-editar-tp');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al cargar TP', 'error');
+    }
+}
+
+async function guardarEdicionTP() {
+    const id = document.getElementById('edit-tp-id').value;
+    const data = {
+        titulo: document.getElementById('edit-tp-titulo').value.trim(),
+        descripcion: document.getElementById('edit-tp-descripcion').value.trim(),
+        fecha_entrega: document.getElementById('edit-tp-fecha').value
+    };
+    
+    try {
+        const response = await fetch(`/trabajos-practicos/`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            showToast('TP actualizado exitosamente', 'success');
+            cerrarModal('modal-editar-tp');
+        } else {
+            showToast(result.error || 'Error al actualizar TP', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al actualizar TP', 'error');
+    }
+}
+
+// ELIMINAR CON CONFIRMACIÓN
+function eliminarAlumno(id, nombre) {
+    document.getElementById('mensaje-confirmar-eliminar').textContent = 
+        `¿Estás seguro de eliminar al alumno ?`;
+    
+    accionEliminar = async () => {
+        try {
+            const response = await fetch(`/alumnos/`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                showToast('Alumno eliminado exitosamente', 'success');
+                cerrarModal('modal-confirmar-eliminar');
+                loadAlumnos();
+            } else {
+                showToast(result.error || 'Error al eliminar alumno', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error al eliminar alumno', 'error');
+        }
+    };
+    
+    showModal('modal-confirmar-eliminar');
+}
+
+function eliminarCurso(id, nombre) {
+    document.getElementById('mensaje-confirmar-eliminar').textContent = 
+        `¿Estás seguro de eliminar el curso ?`;
+    
+    accionEliminar = async () => {
+        try {
+            const response = await fetch(`/cursos/`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                showToast('Curso eliminado exitosamente', 'success');
+                cerrarModal('modal-confirmar-eliminar');
+                loadDashboardData();
+            } else {
+                showToast(result.error || 'Error al eliminar curso', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error al eliminar curso', 'error');
+        }
+    };
+    
+    showModal('modal-confirmar-eliminar');
+}
+
+function eliminarTP(id, titulo) {
+    document.getElementById('mensaje-confirmar-eliminar').textContent = 
+        `¿Estás seguro de eliminar el TP ""?`;
+    
+    accionEliminar = async () => {
+        try {
+            const response = await fetch(`/trabajos-practicos/`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                showToast('TP eliminado exitosamente', 'success');
+                cerrarModal('modal-confirmar-eliminar');
+            } else {
+                showToast(result.error || 'Error al eliminar TP', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error al eliminar TP', 'error');
+        }
+    };
+    
+    showModal('modal-confirmar-eliminar');
+}
+
+function confirmarEliminacion() {
+    if (accionEliminar) {
+        accionEliminar();
+        accionEliminar = null;
+    }
+}
+
+// Exportar funciones
+window.editarAlumno = editarAlumno;
+window.guardarEdicionAlumno = guardarEdicionAlumno;
+window.eliminarAlumno = eliminarAlumno;
+window.editarCurso = editarCurso;
+window.guardarEdicionCurso = guardarEdicionCurso;
+window.eliminarCurso = eliminarCurso;
+window.editarTP = editarTP;
+window.guardarEdicionTP = guardarEdicionTP;
+window.eliminarTP = eliminarTP;
+window.confirmarEliminacion = confirmarEliminacion;
