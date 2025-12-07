@@ -331,10 +331,13 @@ async function cargarAlumnosParaRegistro() {
             const card = crearCardRegistroAlumno(alumno);
             container.appendChild(card);
 
-            // Inicializar registro vacío
+            // Inicializar registro vacío con todas las variables
             state.claseActual.registros[alumno.id] = {
                 asistencia: null,
                 participacion: null,
+                tpEntregado: null,
+                notaTP: null,
+                actitud: null,
                 observaciones: ''
             };
         });
@@ -365,10 +368,10 @@ function crearCardRegistroAlumno(alumno) {
                 </button>
             </div>
         </div>
-        <div>
-            <label style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.5rem; display: block;">
-                Participación:
-            </label>
+        
+        <!-- Participación -->
+        <div class="registro-section">
+            <label class="registro-label">Participación:</label>
             <div class="participacion-buttons">
                 <button class="participacion-btn" onclick="marcarParticipacion(${alumno.id}, 'alta')">
                     Alta
@@ -384,6 +387,54 @@ function crearCardRegistroAlumno(alumno) {
                 </button>
             </div>
         </div>
+
+        <!-- Trabajo Práctico -->
+        <div class="registro-section">
+            <label class="registro-label">Trabajo Práctico:</label>
+            <div class="tp-container">
+                <div class="tp-entrega">
+                    <button class="tp-btn" onclick="marcarTPEntregado(${alumno.id}, true)">
+                        ✓ Entregado
+                    </button>
+                    <button class="tp-btn" onclick="marcarTPEntregado(${alumno.id}, false)">
+                        ✗ No Entregado
+                    </button>
+                </div>
+                <div class="tp-calificacion">
+                    <label class="tp-label">Nota:</label>
+                    <input 
+                        type="number" 
+                        min="1" 
+                        max="10" 
+                        step="0.5"
+                        class="tp-nota-input" 
+                        placeholder="1-10"
+                        onchange="guardarNotaTP(${alumno.id}, this.value)"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Actitud -->
+        <div class="registro-section">
+            <label class="registro-label">Actitud en Clase:</label>
+            <div class="actitud-buttons">
+                <button class="actitud-btn" onclick="marcarActitud(${alumno.id}, 'excelente')">
+                    😊 Excelente
+                </button>
+                <button class="actitud-btn" onclick="marcarActitud(${alumno.id}, 'buena')">
+                    🙂 Buena
+                </button>
+                <button class="actitud-btn" onclick="marcarActitud(${alumno.id}, 'regular')">
+                    😐 Regular
+                </button>
+                <button class="actitud-btn" onclick="marcarActitud(${alumno.id}, 'mala')">
+                    😞 Mala
+                </button>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
         <textarea 
             class="observaciones-input" 
             placeholder="Observaciones (opcional)..."
@@ -419,6 +470,47 @@ function marcarParticipacion(alumnoId, nivel) {
     // Actualizar UI
     const card = event.target.closest('.alumno-registro-card');
     card.querySelectorAll('.participacion-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+function marcarTPEntregado(alumnoId, entregado) {
+    // Actualizar estado
+    state.claseActual.registros[alumnoId].tpEntregado = entregado;
+
+    // Actualizar UI
+    const card = event.target.closest('.alumno-registro-card');
+    card.querySelectorAll('.tp-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    showToast(`TP ${entregado ? 'entregado' : 'no entregado'}`, 'info');
+}
+
+function guardarNotaTP(alumnoId, nota) {
+    const notaNum = parseFloat(nota);
+
+    if (nota && (notaNum < 1 || notaNum > 10)) {
+        showToast('La nota debe estar entre 1 y 10', 'error');
+        return;
+    }
+
+    state.claseActual.registros[alumnoId].notaTP = nota ? notaNum : null;
+
+    if (nota) {
+        showToast(`Nota TP registrada: ${notaNum}`, 'success');
+    }
+}
+
+function marcarActitud(alumnoId, actitud) {
+    // Actualizar estado
+    state.claseActual.registros[alumnoId].actitud = actitud;
+
+    // Actualizar UI
+    const card = event.target.closest('.alumno-registro-card');
+    card.querySelectorAll('.actitud-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
@@ -752,3 +844,7 @@ window.verClaseDetalle = verClaseDetalle;
 window.registrarClaseDirecta = registrarClaseDirecta;
 window.verAlumnosClase = verAlumnosClase;
 window.verAlertasClase = verAlertasClase;
+// Nuevas funciones de registro completo
+window.marcarTPEntregado = marcarTPEntregado;
+window.guardarNotaTP = guardarNotaTP;
+window.marcarActitud = marcarActitud;

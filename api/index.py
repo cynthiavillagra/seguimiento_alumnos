@@ -1,31 +1,16 @@
 """
-API REST con Python Puro + POO
+API REST con PostgreSQL
 Sistema de Seguimiento de Alumnos
-
-Sin frameworks, solo Python estándar con Programación Orientada a Objetos.
 """
 
 import json
 import os
-import sys
-from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-
-# Agregar src al path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
+from api.db import execute_query, execute_insert
 
 class APIHandler(BaseHTTPRequestHandler):
-    """
-    Handler HTTP con POO para manejar requests REST.
-    
-    Decisión de diseño: Clase que hereda de BaseHTTPRequestHandler
-    - Maneja requests HTTP de forma orientada a objetos
-    - Métodos para cada verbo HTTP (GET, POST, PUT, DELETE)
-    - Compatible con Vercel sin dependencias externas
-    """
+    """Handler HTTP para manejar requests REST con PostgreSQL"""
     
     def _set_headers(self, status_code=200, content_type='application/json'):
         """Configura headers de respuesta"""
@@ -39,7 +24,7 @@ class APIHandler(BaseHTTPRequestHandler):
     def _send_json(self, data, status_code=200):
         """Envía respuesta JSON"""
         self._set_headers(status_code)
-        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        self.wfile.write(json.dumps(data, ensure_ascii=False, default=str).encode('utf-8'))
     
     def _send_error_json(self, message, status_code=500):
         """Envía error en formato JSON"""
@@ -53,16 +38,7 @@ class APIHandler(BaseHTTPRequestHandler):
         self._set_headers(204)
     
     def do_GET(self):
-        """
-        Maneja requests GET.
-        
-        Rutas implementadas:
-        - / : Info de la API
-        - /health : Health check
-        - /ping : Ping simple
-        - /clases : Listar clases del profesor
-        - /alumnos : Listar alumnos
-        """
+        """Maneja requests GET"""
         parsed_path = urlparse(self.path)
         path = parsed_path.path
         
@@ -71,14 +47,20 @@ class APIHandler(BaseHTTPRequestHandler):
                 self._handle_root()
             elif path == '/health':
                 self._handle_health()
-            elif path == '/ping':
-                self._handle_ping()
-            elif path == '/docs':
-                self._handle_docs()
-            elif path == '/clases':
-                self._handle_get_clases()
+            elif path == '/clases' or path == '/cursos':
+                self._handle_get_cursos()
             elif path == '/alumnos':
                 self._handle_get_alumnos()
+            elif path == '/alertas':
+                self._handle_get_alertas()
+            elif path.startswith('/cursos/') and '/alumnos' in path:
+                # /cursos/{id}/alumnos
+                curso_id = path.split('/')[2]
+                self._handle_get_alumnos_curso(curso_id)
+            elif path.startswith('/cursos/') and '/tps' in path:
+                # /cursos/{id}/tps
+                curso_id = path.split('/')[2]
+                self._handle_get_tps_curso(curso_id)
             else:
                 self._send_error_json('Ruta no encontrada', 404)
         
@@ -86,12 +68,7 @@ class APIHandler(BaseHTTPRequestHandler):
             self._send_error_json(str(e), 500)
     
     def do_POST(self):
-        """
-        Maneja requests POST.
-        
-        Rutas implementadas:
-        - /alumnos : Crear alumno (futuro)
-        """
+        """Maneja requests POST"""
         parsed_path = urlparse(self.path)
         path = parsed_path.path
         
@@ -103,189 +80,296 @@ class APIHandler(BaseHTTPRequestHandler):
             
             if path == '/alumnos':
                 self._handle_create_alumno(data)
+            elif path == '/clase/registrar':
+                self._handle_registrar_clase(data)
             else:
                 self._send_error_json('Ruta no encontrada', 404)
         
-        except json.JSONDecodeError:
-            self._send_error_json('JSON inválido', 400)
         except Exception as e:
             self._send_error_json(str(e), 500)
     
     # ========================================================================
-    # Handlers de Rutas
+    # Handlers
     # ========================================================================
     
     def _handle_root(self):
-        """Endpoint raíz - Info de la API"""
+        """Info de la API"""
         self._send_json({
-            'message': '🎓 API de Seguimiento de Alumnos',
-            'version': '1.0.0',
-            'status': 'running',
-            'tecnologia': 'Python Puro + POO',
-            'framework': 'Ninguno (Python estándar)',
-            'endpoints': {
-                'GET /': 'Info de la API',
-                'GET /health': 'Health check',
-                'GET /ping': 'Ping',
-                'GET /docs': 'Documentación',
-                'GET /alumnos': 'Listar alumnos',
-                'POST /alumnos': 'Crear alumno'
-            }
-        })
-    
-    def _handle_health(self):
-        """Health check"""
-        self._send_json({
-            'status': 'healthy',
-            'api': 'running',
-            'database': 'sqlite (efímero en Vercel)',
-            'version': '1.0.0'
-        })
-    
-    def _handle_ping(self):
-        """Ping simple"""
-        self._send_json({'ping': 'pong'})
-    
-    def _handle_docs(self):
-        """Documentación de la API"""
-        self._send_json({
-            'title': 'API de Seguimiento de Alumnos',
-            'description': 'API REST construida con Python puro y POO',
-            'version': '1.0.0',
+            'nombre': 'API de Seguimiento de Alumnos',
+            'version': '2.0.0',
+            'database': 'PostgreSQL (Vercel)',
             'endpoints': [
-                {
-                    'method': 'GET',
-                    'path': '/',
-                    'description': 'Información general de la API'
-                },
-                {
-                    'method': 'GET',
-                    'path': '/health',
-                    'description': 'Verifica el estado de la API'
-                },
-                {
-                    'method': 'GET',
-                    'path': '/ping',
-                    'description': 'Ping simple para verificar conectividad'
-                },
-                {
-                    'method': 'GET',
-                    'path': '/alumnos',
-                    'description': 'Lista todos los alumnos'
-                },
-                {
-                    'method': 'POST',
-                    'path': '/alumnos',
-                    'description': 'Crea un nuevo alumno',
-                    'body': {
-                        'nombre': 'string',
-                        'apellido': 'string',
-                        'dni': 'string',
-                        'email': 'string',
-                        'cohorte': 'integer'
-                    }
-                }
+                'GET /',
+                'GET /health',
+                'GET /cursos',
+                'GET /cursos/{id}/alumnos',
+                'GET /cursos/{id}/tps',
+                'GET /alumnos',
+                'GET /alertas',
+                'POST /alumnos',
+                'POST /clase/registrar'
             ]
         })
     
-    def _handle_get_clases(self):
-        """Lista clases del profesor (por ahora, datos de ejemplo)"""
-        # TODO: Conectar con la base de datos
-        clases_ejemplo = [
-            {
-                'id': 1,
-                'materia': 'Programación I',
-                'cohorte': 2024,
-                'totalAlumnos': 30,
-                'asistenciaPromedio': 85,
-                'alumnosEnRiesgo': 3,
-                'totalClases': 12,
-                'ultimaClase': '2024-12-05'
-            },
-            {
-                'id': 2,
-                'materia': 'Matemática',
-                'cohorte': 2024,
-                'totalAlumnos': 28,
-                'asistenciaPromedio': 90,
-                'alumnosEnRiesgo': 1,
-                'totalClases': 10,
-                'ultimaClase': '2024-12-06'
-            },
-            {
-                'id': 3,
-                'materia': 'Física',
-                'cohorte': 2023,
-                'totalAlumnos': 25,
-                'asistenciaPromedio': 78,
-                'alumnosEnRiesgo': 5,
-                'totalClases': 15,
-                'ultimaClase': '2024-12-04'
-            }
-        ]
+    def _handle_health(self):
+        """Health check con verificación de BD"""
+        try:
+            # Verificar conexión a BD
+            result = execute_query("SELECT COUNT(*) as count FROM alumno", fetch_one=True)
+            
+            self._send_json({
+                'status': 'healthy',
+                'database': 'connected',
+                'alumnos_count': result['count']
+            })
+        except Exception as e:
+            self._send_json({
+                'status': 'unhealthy',
+                'database': 'disconnected',
+                'error': str(e)
+            }, 500)
+    
+    def _handle_get_cursos(self):
+        """Lista cursos con estadísticas"""
+        query = """
+            SELECT 
+                c.id,
+                c.nombre_materia as materia,
+                c.anio as cohorte,
+                c.cuatrimestre,
+                c.docente_responsable as docente,
+                COUNT(DISTINCT i.alumno_id) as "totalAlumnos",
+                COALESCE(ROUND(AVG(vra.porcentaje_asistencia), 0), 0) as "asistenciaPromedio",
+                COUNT(DISTINCT CASE 
+                    WHEN vra.porcentaje_asistencia < 70 THEN vra.alumno_id 
+                END) as "alumnosEnRiesgo",
+                COUNT(DISTINCT cl.id) as "totalClases",
+                MAX(cl.fecha) as "ultimaClase"
+            FROM curso c
+            LEFT JOIN inscripcion i ON c.id = i.curso_id
+            LEFT JOIN vista_resumen_asistencias vra 
+                ON i.alumno_id = vra.alumno_id 
+                AND c.id = vra.curso_id
+            LEFT JOIN clase cl ON c.id = cl.curso_id
+            GROUP BY c.id, c.nombre_materia, c.anio, c.cuatrimestre, c.docente_responsable
+            ORDER BY c.anio DESC, c.cuatrimestre DESC, c.nombre_materia
+        """
+        
+        cursos = execute_query(query)
         
         self._send_json({
-            'total': len(clases_ejemplo),
-            'clases': clases_ejemplo
+            'total': len(cursos),
+            'clases': cursos
         })
     
     def _handle_get_alumnos(self):
-        """Lista alumnos (por ahora, datos de ejemplo)"""
-        # TODO: Conectar con la base de datos
-        alumnos_ejemplo = [
-            {
-                'id': 1,
-                'nombre': 'Juan',
-                'apellido': 'Pérez',
-                'dni': '12345678',
-                'email': 'juan.perez@example.com',
-                'cohorte': 2024,
-                'nombre_completo': 'Pérez, Juan'
-            },
-            {
-                'id': 2,
-                'nombre': 'Ana',
-                'apellido': 'García',
-                'dni': '23456789',
-                'email': 'ana.garcia@example.com',
-                'cohorte': 2024,
-                'nombre_completo': 'García, Ana'
-            }
-        ]
+        """Lista todos los alumnos"""
+        query = """
+            SELECT 
+                id,
+                nombre,
+                apellido,
+                dni,
+                email,
+                cohorte,
+                CONCAT(apellido, ', ', nombre) as nombre_completo
+            FROM alumno
+            ORDER BY apellido, nombre
+        """
+        
+        alumnos = execute_query(query)
         
         self._send_json({
-            'total': len(alumnos_ejemplo),
-            'alumnos': alumnos_ejemplo
+            'total': len(alumnos),
+            'alumnos': alumnos
+        })
+    
+    def _handle_get_alumnos_curso(self, curso_id):
+        """Lista alumnos de un curso específico"""
+        query = """
+            SELECT 
+                a.id,
+                a.nombre,
+                a.apellido,
+                a.dni,
+                a.email,
+                a.cohorte,
+                CONCAT(a.apellido, ', ', a.nombre) as nombre_completo,
+                COALESCE(vra.porcentaje_asistencia, 0) as porcentaje_asistencia,
+                COALESCE(vrt.porcentaje_entregados, 0) as porcentaje_tps
+            FROM alumno a
+            JOIN inscripcion i ON a.id = i.alumno_id
+            LEFT JOIN vista_resumen_asistencias vra 
+                ON a.id = vra.alumno_id AND i.curso_id = vra.curso_id
+            LEFT JOIN vista_resumen_tps vrt 
+                ON a.id = vrt.alumno_id AND i.curso_id = vrt.curso_id
+            WHERE i.curso_id = %s
+            ORDER BY a.apellido, a.nombre
+        """
+        
+        alumnos = execute_query(query, (curso_id,))
+        
+        self._send_json({
+            'total': len(alumnos),
+            'alumnos': alumnos
+        })
+    
+    def _handle_get_tps_curso(self, curso_id):
+        """Lista TPs de un curso"""
+        query = """
+            SELECT 
+                tp.id,
+                tp.titulo,
+                tp.descripcion,
+                tp.fecha_entrega as "fechaEntrega",
+                COUNT(DISTINCT et.alumno_id) FILTER (WHERE et.entregado = TRUE) as entregados,
+                COUNT(DISTINCT et.alumno_id) FILTER (WHERE et.entregado = FALSE) as "noEntregados",
+                ROUND(AVG(et.nota), 2) as "promedioNotas"
+            FROM trabajo_practico tp
+            LEFT JOIN entrega_tp et ON tp.id = et.trabajo_practico_id
+            WHERE tp.curso_id = %s
+            GROUP BY tp.id, tp.titulo, tp.descripcion, tp.fecha_entrega
+            ORDER BY tp.fecha_entrega DESC
+        """
+        
+        tps = execute_query(query, (curso_id,))
+        
+        self._send_json({
+            'total': len(tps),
+            'tps': tps
+        })
+    
+    def _handle_get_alertas(self):
+        """Obtiene alertas de alumnos en riesgo"""
+        # Detectar 2 faltas consecutivas
+        query_faltas = """
+            WITH clases_ordenadas AS (
+                SELECT 
+                    ra.alumno_id,
+                    cl.curso_id,
+                    cl.fecha,
+                    ra.estado,
+                    LAG(ra.estado, 1) OVER (
+                        PARTITION BY ra.alumno_id, cl.curso_id 
+                        ORDER BY cl.fecha
+                    ) AS estado_anterior,
+                    LAG(cl.fecha, 1) OVER (
+                        PARTITION BY ra.alumno_id, cl.curso_id 
+                        ORDER BY cl.fecha
+                    ) AS fecha_anterior
+                FROM registro_asistencia ra
+                JOIN clase cl ON ra.clase_id = cl.id
+            )
+            SELECT DISTINCT
+                a.id as alumno_id,
+                CONCAT(a.apellido, ', ', a.nombre) as alumno_nombre,
+                c.id as curso_id,
+                c.nombre_materia as curso_nombre,
+                co.fecha_anterior,
+                co.fecha,
+                'faltas_consecutivas' as tipo
+            FROM clases_ordenadas co
+            JOIN alumno a ON co.alumno_id = a.id
+            JOIN curso c ON co.curso_id = c.id
+            WHERE co.estado = 'Ausente' 
+              AND co.estado_anterior = 'Ausente'
+            ORDER BY co.fecha DESC
+            LIMIT 50
+        """
+        
+        # Alumnos con asistencia < 70%
+        query_asistencia = """
+            SELECT 
+                a.id as alumno_id,
+                CONCAT(a.apellido, ', ', a.nombre) as alumno_nombre,
+                c.id as curso_id,
+                c.nombre_materia as curso_nombre,
+                vra.porcentaje_asistencia,
+                'asistencia_baja' as tipo
+            FROM vista_resumen_asistencias vra
+            JOIN alumno a ON vra.alumno_id = a.id
+            JOIN curso c ON vra.curso_id = c.id
+            WHERE vra.porcentaje_asistencia < 70
+            ORDER BY vra.porcentaje_asistencia ASC
+            LIMIT 50
+        """
+        
+        alertas_faltas = execute_query(query_faltas)
+        alertas_asistencia = execute_query(query_asistencia)
+        
+        # Combinar alertas
+        alertas = []
+        
+        for alerta in alertas_faltas:
+            alertas.append({
+                'tipo': 'faltas_consecutivas',
+                'nivel': 'alto',
+                'alumno': {
+                    'id': alerta['alumno_id'],
+                    'nombre': alerta['alumno_nombre']
+                },
+                'curso': {
+                    'id': alerta['curso_id'],
+                    'materia': alerta['curso_nombre']
+                },
+                'mensaje': f"2 faltas consecutivas ({alerta['fecha_anterior']} y {alerta['fecha']})"
+            })
+        
+        for alerta in alertas_asistencia:
+            alertas.append({
+                'tipo': 'asistencia_baja',
+                'nivel': 'medio' if alerta['porcentaje_asistencia'] >= 60 else 'alto',
+                'alumno': {
+                    'id': alerta['alumno_id'],
+                    'nombre': alerta['alumno_nombre']
+                },
+                'curso': {
+                    'id': alerta['curso_id'],
+                    'materia': alerta['curso_nombre']
+                },
+                'mensaje': f"Asistencia: {alerta['porcentaje_asistencia']:.0f}%"
+            })
+        
+        self._send_json({
+            'total': len(alertas),
+            'alertas': alertas
         })
     
     def _handle_create_alumno(self, data):
-        """Crea un alumno (por ahora, solo valida y retorna)"""
-        # Validar datos requeridos
-        required_fields = ['nombre', 'apellido', 'dni', 'email', 'cohorte']
-        missing_fields = [field for field in required_fields if field not in data]
+        """Crea un nuevo alumno"""
+        query = """
+            INSERT INTO alumno (nombre, apellido, dni, email, cohorte)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """
         
-        if missing_fields:
-            self._send_error_json(
-                f'Campos requeridos faltantes: {", ".join(missing_fields)}',
-                400
-            )
-            return
-        
-        # TODO: Guardar en base de datos
-        # Por ahora, solo retornamos el alumno creado
-        alumno_creado = {
-            'id': 999,  # ID temporal
-            'nombre': data['nombre'],
-            'apellido': data['apellido'],
-            'dni': data['dni'],
-            'email': data['email'],
-            'cohorte': data['cohorte'],
-            'nombre_completo': f"{data['apellido']}, {data['nombre']}",
-            'mensaje': 'Alumno creado exitosamente (datos de ejemplo)'
-        }
-        
-        self._send_json(alumno_creado, 201)
+        try:
+            alumno_id = execute_insert(query, (
+                data['nombre'],
+                data['apellido'],
+                data['dni'],
+                data['email'],
+                data['cohorte']
+            ))
+            
+            self._send_json({
+                'success': True,
+                'id': alumno_id,
+                'message': 'Alumno creado exitosamente'
+            }, 201)
+        except Exception as e:
+            self._send_error_json(f'Error al crear alumno: {str(e)}', 400)
+    
+    def _handle_registrar_clase(self, data):
+        """Registra una clase completa con asistencia, participación, TPs, etc."""
+        # TODO: Implementar guardado de clase
+        # Por ahora solo devolvemos éxito
+        self._send_json({
+            'success': True,
+            'message': 'Clase registrada (pendiente implementación completa)'
+        })
 
-
-# Para Vercel, necesitamos exportar el handler
-handler = APIHandler
+# Handler para Vercel
+def handler(request, response):
+    """Entry point para Vercel"""
+    return APIHandler(request, response)

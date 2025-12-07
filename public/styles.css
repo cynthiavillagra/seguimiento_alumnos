@@ -1251,3 +1251,129 @@ body {
         flex-direction: column;
     }
 }
+
+/* ============================================================================
+   REGISTRO COMPLETO - Nuevos Campos
+   ============================================================================ */
+
+/* Secciones de registro */
+.registro-section {
+    margin-bottom: 1rem;
+}
+
+.registro-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: 600;
+}
+
+/* Trabajo Práctico */
+.tp-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.tp-entrega {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tp-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--gray-300);
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.tp-btn:hover {
+    border-color: var(--primary);
+    background: var(--gray-50);
+}
+
+.tp-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.tp-calificacion {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tp-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 600;
+}
+
+.tp-nota-input {
+    width: 80px;
+    padding: 0.5rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.tp-nota-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.tp-nota-input::-webkit-inner-spin-button,
+.tp-nota-input::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+/* Actitud */
+.actitud-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.actitud-btn {
+    padding: 0.5rem;
+    border: 2px solid var(--gray-300);
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.actitud-btn:hover {
+    border-color: var(--primary);
+    background: var(--gray-50);
+}
+
+.actitud-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-color: transparent;
+}
+
+/* Responsive para nuevos campos */
+@media (max-width: 768px) {
+    .tp-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .actitud-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
