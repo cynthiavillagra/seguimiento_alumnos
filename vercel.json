@@ -14,15 +14,9 @@
         }
     ],
     "env": {
-        "PYTHON_VERSION": "3.11"
+        "PYTHONPATH": "."
     },
     "regions": [
         "gru1"
-    ],
-    "functions": {
-        "api/index.py": {
-            "memory": 1024,
-            "maxDuration": 10
-        }
-    }
+    ]
 }
