@@ -139,10 +139,10 @@ body {
     transform: translateY(-2px);
 }
 
-.nav-link.active {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    box-shadow: var(--shadow-md);
+.nav-link.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: var(--shadow-md); }
+
+/* Main Content */
+.main-content {
     max-width: 1400px;
     margin: 2rem auto;
     padding: 0 2rem 2rem;
@@ -1521,3 +1521,5 @@ body {
     display: flex;
     gap: 0.5rem;
 }
+
+
