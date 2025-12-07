@@ -1,0 +1,43 @@
+# Archivos y carpetas a ignorar en el despliegue de Vercel
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Base de datos local (no desplegar la BD de desarrollo)
+*.db
+*.sqlite
+*.sqlite3
+database.db
+
+# Tests
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentación (opcional, comentar si quieres incluirla)
+# docs/
+
+# Git
+.git/
+.gitignore
+
+# Otros
+.DS_Store
+Thumbs.db
+*.log

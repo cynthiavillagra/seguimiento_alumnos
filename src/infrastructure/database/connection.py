@@ -56,13 +56,19 @@ class DatabaseConnection:
             db_path: Ruta al archivo de BD. Si es None, usa la ruta por defecto.
         """
         if db_path is None:
-            # Decisión de diseño: BD en la raíz del proyecto
-            # En producción, esto vendría de variables de entorno
-            project_root = Path(__file__).parent.parent.parent.parent
-            db_path = project_root / "database.db"
+            # Decisión de diseño: Leer desde variable de entorno primero
+            # Esto permite configurar la ruta en Vercel (/tmp/database.db)
+            db_path = os.environ.get("DATABASE_PATH")
+            
+            if db_path is None:
+                # Si no hay variable de entorno, usar ruta por defecto
+                project_root = Path(__file__).parent.parent.parent.parent
+                db_path = project_root / "database.db"
         
         # Crear directorio si no existe
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        db_dir = os.path.dirname(db_path)
+        if db_dir:  # Solo si hay directorio (no es solo nombre de archivo)
+            os.makedirs(db_dir, exist_ok=True)
         
         # Conectar a SQLite
         self._conexion = sqlite3.connect(

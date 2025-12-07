@@ -1,0 +1,28 @@
+{
+    "version": 2,
+    "name": "sistema-seguimiento-alumnos",
+    "builds": [
+        {
+            "src": "api/index.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "api/index.py"
+        }
+    ],
+    "env": {
+        "PYTHON_VERSION": "3.11"
+    },
+    "regions": [
+        "gru1"
+    ],
+    "functions": {
+        "api/index.py": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    }
+}

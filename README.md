@@ -2,6 +2,22 @@
 
 Sistema de seguimiento y detección temprana de riesgo de deserción para Tecnicaturas Superiores.
 
+> ## ⚠️ ADVERTENCIA IMPORTANTE - Base de Datos Efímera en Vercel
+> 
+> **Si desplegás esta aplicación en Vercel con SQLite:**
+> - ❌ **TODOS LOS DATOS SE BORRAN** en cada nuevo despliegue
+> - ❌ **Los archivos cargados NO PERSISTEN** (se pierden al reiniciar)
+> - ❌ **Los cambios en la BD NO SE GUARDAN** permanentemente
+> 
+> **¿Por qué?** Vercel usa contenedores efímeros. SQLite se guarda en `/tmp` que se borra constantemente.
+> 
+> **Soluciones:**
+> - ✅ **Para desarrollo/demos**: Usar SQLite (está bien que sea efímero)
+> - ✅ **Para producción**: Migrar a PostgreSQL (ver [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md))
+> - ✅ **Para archivos**: Usar almacenamiento externo (Vercel Blob, S3, Cloudinary)
+>
+> 📖 **Lee la advertencia completa**: [ADVERTENCIA_DATOS_EFIMEROS.md](./ADVERTENCIA_DATOS_EFIMEROS.md)
+
 ## 📋 Descripción
 
 Esta aplicación permite a docentes y coordinadores de Tecnicaturas Superiores:
@@ -165,7 +181,68 @@ pytest tests/integration
 pytest --cov=src tests/
 ```
 
-## 📁 Estructura del Proyecto
+## � Despliegue en Vercel
+
+El sistema está preparado para desplegarse en Vercel como función serverless.
+
+### Opción 1: Despliegue desde GitHub (Recomendado)
+
+1. Subir el proyecto a GitHub
+2. Importar en Vercel desde el dashboard
+3. Vercel detectará automáticamente la configuración
+4. ¡Listo! Tu API estará en línea
+
+### Opción 2: Despliegue con Vercel CLI
+
+```bash
+# Instalar Vercel CLI
+npm install -g vercel
+
+# Iniciar sesión
+vercel login
+
+# Desplegar
+vercel
+
+# Desplegar a producción
+vercel --prod
+```
+
+### 📖 Guía Completa
+
+Ver [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md) para instrucciones detalladas, configuración avanzada y troubleshooting.
+
+### ⚠️ IMPORTANTE: SQLite en Vercel es EFÍMERO
+
+**🚨 ADVERTENCIA CRÍTICA:**
+
+Cuando desplegás en Vercel con SQLite:
+
+1. **Cada despliegue = Base de datos NUEVA y VACÍA**
+   - Si hacés cambios en el código y redespliegás → Se pierden TODOS los datos
+   - Si Vercel reinicia el contenedor → Se pierden TODOS los datos
+   
+2. **Los datos NO persisten entre requests**
+   - Cada función serverless puede tener su propia copia de `/tmp`
+   - Los datos que guardás pueden no estar disponibles en el próximo request
+   
+3. **NO usar para datos importantes**
+   - ❌ NO guardar datos de alumnos reales
+   - ❌ NO usar como base de datos de producción
+   - ❌ NO esperar que los datos se mantengan
+
+**✅ Casos de uso válidos con SQLite en Vercel:**
+- Demos y presentaciones (los datos se resetean automáticamente)
+- Testing de la API (cada test inicia limpio)
+- Desarrollo y pruebas (no importa perder los datos)
+
+**✅ Para producción REAL:**
+- **Migrar a PostgreSQL** (Vercel Postgres, Supabase, Neon, Railway)
+- Ver guía completa en [DESPLIEGUE_VERCEL.md](./DESPLIEGUE_VERCEL.md)
+- Los datos SÍ persistirán y estarán disponibles siempre
+
+
+## �📁 Estructura del Proyecto
 
 ```
 app-seguimiento-alumnos/

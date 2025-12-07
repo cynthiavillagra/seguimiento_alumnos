@@ -21,6 +21,7 @@ passlib[bcrypt]==1.7.4  # Para hashing de passwords en futuras versiones
 
 # Utilidades
 python-dotenv==1.0.0  # Para variables de entorno
+mangum==0.17.0  # Adaptador ASGI para Vercel/AWS Lambda
 
 # Testing (opcional, para desarrollo)
 pytest==7.4.4
