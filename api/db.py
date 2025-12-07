@@ -14,10 +14,11 @@ def get_db_connection():
     Returns:
         psycopg2.connection: Conexión a la base de datos
     """
-    postgres_url = os.getenv('POSTGRES_URL')
+    # Neon usa DATABASE_URL, Vercel Postgres usa POSTGRES_URL
+    postgres_url = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
     
     if not postgres_url:
-        raise Exception("POSTGRES_URL no encontrada en variables de entorno")
+        raise Exception("DATABASE_URL o POSTGRES_URL no encontrada en variables de entorno")
     
     return psycopg2.connect(postgres_url)
 
