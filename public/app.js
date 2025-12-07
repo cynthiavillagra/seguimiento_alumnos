@@ -4,7 +4,7 @@
  */
 
 // Configuración
-const API_URL = 'https://seguimiento-alumnos.vercel.app';
+const API_URL = '/api'; // Ruta relativa para Vercel
 
 // Estado de la aplicación
 const state = {
