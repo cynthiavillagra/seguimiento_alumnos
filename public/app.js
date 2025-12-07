@@ -4,7 +4,8 @@
  */
 
 // Configuración
-const API_URL = '/api'; // Ruta relativa para Vercel
+// En Vercel, la API está en la raíz (sin /api)
+const API_URL = window.location.hostname.includes('vercel.app') ? '' : '/api';
 
 // Estado de la aplicación
 const state = {
@@ -24,6 +25,7 @@ const state = {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎓 Sistema de Seguimiento de Alumnos iniciado');
+    console.log('API URL:', API_URL || '(raíz)');
 
     // Configurar navegación
     setupNavigation();
@@ -107,13 +109,19 @@ function loadPageData(pageName) {
 
 async function loadDashboardData() {
     try {
-        const response = await fetch(`${API_URL}/alumnos`);
+        const url = `${API_URL}/alumnos`;
+        console.log('Cargando desde:', url);
+
+        const response = await fetch(url);
         const data = await response.json();
+
+        console.log('Datos recibidos:', data);
 
         const totalElement = document.getElementById('total-alumnos');
         if (totalElement) {
-            totalElement.textContent = data.total || 0;
-            animateNumber(totalElement, 0, data.total || 0, 1000);
+            const total = data.total || data.alumnos?.length || 0;
+            totalElement.textContent = total;
+            animateNumber(totalElement, 0, total, 1000);
         }
 
     } catch (error) {
@@ -183,13 +191,29 @@ async function iniciarRegistroClase() {
 
 async function cargarAlumnosParaRegistro() {
     try {
-        const response = await fetch(`${API_URL}/alumnos`);
+        const url = `${API_URL}/alumnos`;
+        console.log('Cargando alumnos desde:', url);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
         const data = await response.json();
+        console.log('Alumnos recibidos:', data);
+
+        const alumnos = data.alumnos || [];
+
+        if (alumnos.length === 0) {
+            showToast('No hay alumnos registrados', 'error');
+            return;
+        }
 
         const container = document.getElementById('lista-registro-alumnos');
         container.innerHTML = '';
 
-        data.alumnos.forEach(alumno => {
+        alumnos.forEach(alumno => {
             const card = crearCardRegistroAlumno(alumno);
             container.appendChild(card);
 
@@ -205,7 +229,7 @@ async function cargarAlumnosParaRegistro() {
 
     } catch (error) {
         console.error('Error al cargar alumnos:', error);
-        showToast('Error al cargar alumnos', 'error');
+        showToast(`Error al cargar alumnos: ${error.message}`, 'error');
     }
 }
 
@@ -358,7 +382,8 @@ async function loadAlumnos() {
     try {
         showLoading('alumnos-tbody');
 
-        const response = await fetch(`${API_URL}/alumnos`);
+        const url = `${API_URL}/alumnos`;
+        const response = await fetch(url);
         const data = await response.json();
 
         state.alumnos = data.alumnos || [];
@@ -419,7 +444,8 @@ async function crearAlumno() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/alumnos`, {
+        const url = `${API_URL}/alumnos`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
