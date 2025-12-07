@@ -35,6 +35,17 @@
                     <span class="badge">3</span>
                 </a>
             </div>
+            <div class="nav-actions">
+                <button class="btn-icon" onclick="mostrarModalCrearAlumno()" title="Crear Alumno">
+                    <span>👤+</span>
+                </button>
+                <button class="btn-icon" onclick="mostrarModalCrearCurso()" title="Crear Curso">
+                    <span>📚+</span>
+                </button>
+                <button class="btn-icon" onclick="mostrarModalCrearTP()" title="Crear TP">
+                    <span>📝+</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -422,6 +433,79 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeModal('modal-nuevo-alumno')">Cancelar</button>
                 <button class="btn-primary" onclick="crearAlumno()">Crear Alumno</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Curso -->
+    <div id="modal-crear-curso" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Nuevo Curso</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-crear-curso')">×</button>
+            </div>
+            <form id="form-crear-curso" onsubmit="event.preventDefault(); crearCurso();">
+                <div class="form-group">
+                    <label for="curso-materia">Nombre de la Materia *</label>
+                    <input type="text" id="curso-materia" required placeholder="ej: Programación I">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="curso-anio">Año *</label>
+                        <input type="number" id="curso-anio" required min="2020" max="2030" value="2024">
+                    </div>
+                    <div class="form-group">
+                        <label for="curso-cuatrimestre">Cuatrimestre *</label>
+                        <select id="curso-cuatrimestre" required>
+                            <option value="1">1er Cuatrimestre</option>
+                            <option value="2" selected>2do Cuatrimestre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="curso-docente">Docente Responsable *</label>
+                    <input type="text" id="curso-docente" required placeholder="ej: Prof. García">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-crear-curso')">Cancelar</button>
+                <button class="btn-primary" onclick="crearCurso()">Crear Curso</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear TP -->
+    <div id="modal-crear-tp" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Nuevo Trabajo Práctico</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-crear-tp')">×</button>
+            </div>
+            <form id="form-crear-tp" onsubmit="event.preventDefault(); crearTP();">
+                <div class="form-group">
+                    <label for="tp-curso">Curso *</label>
+                    <select id="tp-curso" required>
+                        <option value="">Selecciona un curso...</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tp-titulo">Título del TP *</label>
+                    <input type="text" id="tp-titulo" required placeholder="ej: TP1 - Variables y Tipos">
+                </div>
+                <div class="form-group">
+                    <label for="tp-descripcion">Descripción</label>
+                    <textarea id="tp-descripcion" rows="3"
+                        placeholder="Descripción del trabajo práctico (opcional)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tp-fecha">Fecha de Entrega *</label>
+                    <input type="date" id="tp-fecha" required>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modal-crear-tp')">Cancelar</button>
+                <button class="btn-primary" onclick="crearTP()">Crear TP</button>
             </div>
         </div>
     </div>

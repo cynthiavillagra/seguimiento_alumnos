@@ -12,7 +12,7 @@
     ],
     "routes": [
         {
-            "src": "/(alumnos|clases|cursos|health|ping|docs|alertas).*",
+            "src": "/(alumnos|clases|cursos|health|alertas|trabajos-practicos|tps).*",
             "dest": "api/index.py"
         },
         {
