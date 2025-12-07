@@ -9,16 +9,16 @@
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --primary-light: #818cf8;
-    
+
     --secondary: #8b5cf6;
     --accent: #ec4899;
-    
+
     /* Colores de estado */
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #3b82f6;
-    
+
     /* Grises */
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
@@ -30,26 +30,26 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Fondos */
     --bg-primary: #ffffff;
     --bg-secondary: #f9fafb;
     --bg-dark: #1f2937;
-    
+
     /* Sombras */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
+
     /* Bordes */
     --radius-sm: 0.375rem;
     --radius: 0.5rem;
     --radius-md: 0.75rem;
     --radius-lg: 1rem;
     --radius-xl: 1.5rem;
-    
+
     /* Transiciones */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -104,8 +104,15 @@ body {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
 }
 
 .nav-menu {
@@ -172,6 +179,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -234,10 +242,21 @@ body {
     font-size: 2rem;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.stat-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.stat-icon.blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-icon.orange {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
 
 .stat-value {
     font-size: 2.5rem;
@@ -468,9 +487,17 @@ body {
     border-left: 4px solid;
 }
 
-.alert-card.high { border-left-color: var(--danger); }
-.alert-card.medium { border-left-color: var(--warning); }
-.alert-card.low { border-left-color: var(--info); }
+.alert-card.high {
+    border-left-color: var(--danger);
+}
+
+.alert-card.medium {
+    border-left-color: var(--warning);
+}
+
+.alert-card.low {
+    border-left-color: var(--info);
+}
 
 .alert-header {
     display: flex;
@@ -535,6 +562,7 @@ body {
         opacity: 0;
         transform: translateY(50px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -655,15 +683,24 @@ body {
         opacity: 0;
         transform: translateX(100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
     }
 }
 
-.toast.success { border-left: 4px solid var(--success); }
-.toast.error { border-left: 4px solid var(--danger); }
-.toast.info { border-left: 4px solid var(--info); }
+.toast.success {
+    border-left: 4px solid var(--success);
+}
+
+.toast.error {
+    border-left: 4px solid var(--danger);
+}
+
+.toast.info {
+    border-left: 4px solid var(--info);
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -671,28 +708,403 @@ body {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .nav-menu {
         width: 100%;
         flex-wrap: wrap;
     }
-    
+
     .nav-link {
         flex: 1;
         justify-content: center;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .page-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .toolbar {
         flex-direction: column;
+    }
+}
+
+/* ============================================================================
+   NUEVOS ESTILOS - Registro de Clase y Ficha del Alumno
+   ============================================================================ */
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-select,
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-select:focus,
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+/* Clase Header */
+.clase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.clase-header h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.clase-header p {
+    color: var(--gray-600);
+}
+
+.clase-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-badge {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.stat-badge.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.stat-badge.red {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+/* Alumno Card para Registro */
+.alumno-registro-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.alumno-registro-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+}
+
+.alumno-registro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.alumno-registro-nombre {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.asistencia-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.asistencia-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--gray-300);
+    background: white;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+}
+
+.asistencia-btn:hover {
+    transform: translateY(-2px);
+}
+
+.asistencia-btn.presente {
+    border-color: var(--success);
+    background: var(--success);
+    color: white;
+}
+
+.asistencia-btn.ausente {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: white;
+}
+
+.asistencia-btn.tarde {
+    border-color: var(--warning);
+    background: var(--warning);
+    color: white;
+}
+
+.participacion-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.participacion-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: 2px solid var(--gray-300);
+    background: white;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.participacion-btn:hover {
+    border-color: var(--primary);
+}
+
+.participacion-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+}
+
+.observaciones-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.observaciones-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Registro Footer */
+.registro-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--gray-200);
+}
+
+/* Alert Banner */
+.alert-banner {
+    background: white;
+    border-left: 4px solid;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.alert-banner.high {
+    border-left-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.alert-banner.medium {
+    border-left-color: var(--warning);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.alert-banner.low {
+    border-left-color: var(--info);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* Indicadores Grid */
+.indicadores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.indicador-card {
+    background: white;
+    border: 2px solid;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.indicador-card.danger {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.indicador-card.warning {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.indicador-card.success {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.indicador-icon {
+    font-size: 2.5rem;
+}
+
+.indicador-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-bottom: 0.25rem;
+}
+
+.indicador-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--gray-900);
+}
+
+.indicador-detail {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+/* Historial */
+.historial-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.historial-item {
+    background: white;
+    border-left: 4px solid;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+}
+
+.historial-item.presente {
+    border-left-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.historial-item.ausente {
+    border-left-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.historial-fecha {
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.historial-estado {
+    font-weight: 600;
+}
+
+.historial-detalle {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+/* Botón Back */
+.btn-back {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    background: var(--gray-200);
+    transform: translateX(-3px);
+}
+
+/* Responsive para nuevos componentes */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .clase-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .clase-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .alumno-registro-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .asistencia-buttons {
+        width: 100%;
+    }
+
+    .asistencia-btn {
+        flex: 1;
+    }
+
+    .indicadores-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .historial-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 }
