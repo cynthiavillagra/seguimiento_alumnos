@@ -131,36 +131,40 @@ class APIHandler(BaseHTTPRequestHandler):
     
     def _handle_get_cursos(self):
         """Lista cursos con estadísticas"""
-        query = """
-            SELECT 
-                c.id,
-                c.nombre_materia as materia,
-                c.anio as cohorte,
-                c.cuatrimestre,
-                c.docente_responsable as docente,
-                COUNT(DISTINCT i.alumno_id) as "totalAlumnos",
-                COALESCE(ROUND(AVG(vra.porcentaje_asistencia), 0), 0) as "asistenciaPromedio",
-                COUNT(DISTINCT CASE 
-                    WHEN vra.porcentaje_asistencia < 70 THEN vra.alumno_id 
-                END) as "alumnosEnRiesgo",
-                COUNT(DISTINCT cl.id) as "totalClases",
-                MAX(cl.fecha) as "ultimaClase"
-            FROM curso c
-            LEFT JOIN inscripcion i ON c.id = i.curso_id
-            LEFT JOIN vista_resumen_asistencias vra 
-                ON i.alumno_id = vra.alumno_id 
-                AND c.id = vra.curso_id
-            LEFT JOIN clase cl ON c.id = cl.curso_id
-            GROUP BY c.id, c.nombre_materia, c.anio, c.cuatrimestre, c.docente_responsable
-            ORDER BY c.anio DESC, c.cuatrimestre DESC, c.nombre_materia
-        """
-        
-        cursos = execute_query(query)
-        
-        self._send_json({
-            'total': len(cursos),
-            'clases': cursos
-        })
+        try:
+            query = """
+                SELECT 
+                    c.id,
+                    c.nombre_materia as materia,
+                    c.anio as cohorte,
+                    c.cuatrimestre,
+                    c.docente_responsable as docente,
+                    COUNT(DISTINCT i.alumno_id) as "totalAlumnos",
+                    COALESCE(ROUND(AVG(vra.porcentaje_asistencia), 0), 0) as "asistenciaPromedio",
+                    COUNT(DISTINCT CASE 
+                        WHEN vra.porcentaje_asistencia < 70 THEN vra.alumno_id 
+                    END) as "alumnosEnRiesgo",
+                    COUNT(DISTINCT cl.id) as "totalClases",
+                    MAX(cl.fecha) as "ultimaClase"
+                FROM curso c
+                LEFT JOIN inscripcion i ON c.id = i.curso_id
+                LEFT JOIN vista_resumen_asistencias vra 
+                    ON i.alumno_id = vra.alumno_id 
+                    AND c.id = vra.curso_id
+                LEFT JOIN clase cl ON c.id = cl.curso_id
+                GROUP BY c.id, c.nombre_materia, c.anio, c.cuatrimestre, c.docente_responsable
+                ORDER BY c.anio DESC, c.cuatrimestre DESC, c.nombre_materia
+            """
+            
+            cursos = execute_query(query)
+            
+            self._send_json({
+                'total': len(cursos),
+                'clases': cursos
+            })
+        except Exception as e:
+            import traceback
+            self._send_error_json(f'Error en get_cursos: {str(e)}\n\nTraceback:\n{traceback.format_exc()}', 500)
     
     def _handle_get_alumnos(self):
         """Lista todos los alumnos"""
