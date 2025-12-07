@@ -5,11 +5,12 @@ Sistema de Seguimiento de Alumnos
 Este es el punto de entrada de la API.
 """
 
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
-from src.infrastructure.database.connection import inicializar_base_de_datos
 from src.presentation.api.routers import alumnos
 
 
@@ -22,23 +23,26 @@ async def lifespan(app: FastAPI):
     """
     Gestiona el ciclo de vida de la aplicación.
     
-    Decisión de diseño: Lifespan context manager
-    - Se ejecuta al iniciar la aplicación (startup)
-    - Se ejecuta al cerrar la aplicación (shutdown)
-    - Reemplaza los decoradores @app.on_event("startup") (deprecated)
+    Nota para Vercel: En Vercel con Mangum (lifespan="off"),
+    este código NO se ejecuta. La inicialización se hace bajo demanda.
     """
     # Startup: Inicializar base de datos
     print("🚀 Iniciando aplicación...")
-    try:
-        inicializar_base_de_datos()
-        print("✅ Base de datos inicializada")
-    except Exception as e:
-        print(f"❌ Error al inicializar base de datos: {e}")
-        raise
+    
+    # Solo inicializar BD si NO estamos en Vercel
+    if not os.environ.get("VERCEL"):
+        try:
+            from src.infrastructure.database.connection import inicializar_base_de_datos
+            inicializar_base_de_datos()
+            print("✅ Base de datos inicializada")
+        except Exception as e:
+            print(f"⚠️ Advertencia al inicializar BD: {e}")
+    else:
+        print("ℹ️ Entorno Vercel detectado - BD se inicializa bajo demanda")
     
     yield  # La aplicación está corriendo
     
-    # Shutdown: Limpiar recursos
+    # Shutdown
     print("👋 Cerrando aplicación...")
 
 
@@ -88,11 +92,9 @@ app = FastAPI(
 # Configurar CORS
 # ============================================================================
 
-# Decisión de diseño: CORS permisivo en MVP
-# En producción, restringir origins a dominios específicos
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción: ["https://mi-frontend.com"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,15 +105,7 @@ app.add_middleware(
 # Incluir Routers
 # ============================================================================
 
-# Decisión de diseño: Routers separados por recurso
-# Facilita organización y permite versionar la API
 app.include_router(alumnos.router)
-
-# Aquí se incluirían los demás routers:
-# app.include_router(cursos.router)
-# app.include_router(asistencias.router)
-# app.include_router(alertas.router)
-# etc.
 
 
 # ============================================================================
@@ -125,39 +119,25 @@ app.include_router(alumnos.router)
     description="Verifica que la API esté funcionando"
 )
 def root():
-    """
-    Endpoint raíz de la API.
-    
-    Útil para:
-    - Health checks de Vercel/Docker
-    - Verificar que la API está corriendo
-    """
+    """Endpoint raíz de la API"""
     return {
         "message": "API de Seguimiento de Alumnos",
         "version": "1.0.0",
         "status": "running",
-        "docs": "/docs"
+        "docs": "/docs",
+        "environment": "vercel" if os.environ.get("VERCEL") else "local"
     }
 
 
 @app.get(
     "/health",
     tags=["Health"],
-    summary="Health check detallado",
-    description="Verifica el estado de la API y sus dependencias"
+    summary="Health check detallado"
 )
 def health_check():
-    """
-    Health check detallado.
-    
-    Verifica:
-    - API corriendo
-    - Conexión a base de datos
-    """
-    from src.infrastructure.database.connection import get_db_connection
-    
+    """Health check detallado"""
     try:
-        # Intentar conectar a la BD
+        from src.infrastructure.database.connection import get_db_connection
         conexion = get_db_connection()
         cursor = conexion.cursor()
         cursor.execute("SELECT 1")
@@ -168,7 +148,8 @@ def health_check():
     return {
         "api": "healthy",
         "database": db_status,
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "environment": "vercel" if os.environ.get("VERCEL") else "local"
     }
 
 
@@ -176,26 +157,21 @@ def health_check():
 # Manejo de Errores Global
 # ============================================================================
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
-
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """
-    Manejador global de excepciones no capturadas.
-    
-    Decisión de diseño: Logging centralizado
-    - En producción, esto debería loggear a un servicio (Sentry, CloudWatch, etc.)
-    - No exponer detalles internos al cliente
-    """
+    """Manejador global de excepciones"""
     print(f"❌ Error no manejado: {exc}")
     print(f"   Request: {request.method} {request.url}")
+    
+    import traceback
+    traceback.print_exc()
     
     return JSONResponse(
         status_code=500,
         content={
             "detail": "Error interno del servidor",
-            "type": "internal_server_error"
+            "type": "internal_server_error",
+            "error": str(exc) if os.environ.get("VERCEL") else "Ver logs"
         }
     )
 
@@ -207,12 +183,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     import uvicorn
     
-    # Decisión de diseño: Configuración de desarrollo
-    # En producción, usar gunicorn + uvicorn workers
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,  # Auto-reload en desarrollo
+        reload=True,
         log_level="info"
     )
