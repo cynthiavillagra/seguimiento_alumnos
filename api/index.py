@@ -1,11 +1,6 @@
-"""
-Entrypoint Ultra-Simple para Vercel
-"""
-
 from fastapi import FastAPI
 from mangum import Mangum
 
-# Crear app directamente aquí
 app = FastAPI(
     title="Sistema de Seguimiento de Alumnos",
     version="1.0.0"
@@ -13,26 +8,22 @@ app = FastAPI(
 
 @app.get("/")
 def root():
-    """Endpoint raíz"""
     return {
-        "status": "✅ API funcionando",
-        "message": "Sistema de Seguimiento de Alumnos",
-        "version": "1.0.0",
-        "docs": "/docs"
+        "status": "running",
+        "message": "API de Seguimiento de Alumnos",
+        "version": "1.0.0"
     }
 
 @app.get("/health")
 def health():
-    """Health check"""
-    return {
-        "status": "healthy",
-        "api": "running"
-    }
+    return {"status": "healthy"}
 
 @app.get("/ping")
 def ping():
-    """Ping simple"""
     return {"ping": "pong"}
 
-# Handler para Vercel
+# Para Vercel, el handler debe llamarse exactamente "handler"
 handler = Mangum(app, lifespan="off")
+
+# También exportar app por si Vercel lo necesita
+__all__ = ["app", "handler"]
