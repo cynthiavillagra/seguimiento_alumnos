@@ -274,6 +274,135 @@ def debug_connection():
     return results
 
 
+@app.get(
+    "/api/seed",
+    tags=["Admin"],
+    summary="Cargar datos de prueba"
+)
+def seed_database():
+    """
+    Carga datos de prueba en la base de datos.
+    """
+    from src.infrastructure.database.connection import get_db_connection
+    from datetime import date, datetime
+    
+    conn = get_db_connection()
+    results = {"cursos": 0, "alumnos": 0, "inscripciones": 0, "tps": 0}
+    
+    try:
+        conn.rollback()  # Limpiar estado
+        
+        # Datos de cursos
+        cursos_data = [
+            ("Programación I", 2024, 1, "Prof. González"),
+            ("Matemática Discreta", 2024, 1, "Prof. Martínez"),
+            ("Base de Datos", 2024, 2, "Prof. López"),
+            ("Programación II", 2024, 2, "Prof. González"),
+        ]
+        
+        curso_ids = []
+        for nombre, anio, cuatri, docente in cursos_data:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    "INSERT INTO curso (nombre_materia, anio, cuatrimestre, docente_responsable, fecha_creacion) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                    (nombre, anio, cuatri, docente, datetime.now())
+                )
+                row = cursor.fetchone()
+                conn.commit()
+                if row:
+                    curso_ids.append(row[0])
+                    results["cursos"] += 1
+            except Exception as e:
+                conn.rollback()
+                if 'duplicate' not in str(e).lower():
+                    print(f"Error curso: {e}")
+            finally:
+                cursor.close()
+        
+        # Datos de alumnos
+        alumnos_data = [
+            ("Juan", "Pérez", "12345678", "juan.perez@email.com", 2024),
+            ("María", "García", "23456789", "maria.garcia@email.com", 2024),
+            ("Carlos", "López", "34567890", "carlos.lopez@email.com", 2024),
+            ("Ana", "Martínez", "45678901", "ana.martinez@email.com", 2024),
+            ("Pedro", "Rodríguez", "56789012", "pedro.rodriguez@email.com", 2023),
+            ("Laura", "Fernández", "67890123", "laura.fernandez@email.com", 2023),
+            ("Diego", "Sánchez", "78901234", "diego.sanchez@email.com", 2024),
+            ("Lucía", "Romero", "89012345", "lucia.romero@email.com", 2024),
+        ]
+        
+        alumno_ids = []
+        for nombre, apellido, dni, email, cohorte in alumnos_data:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    "INSERT INTO alumno (nombre, apellido, dni, email, cohorte, fecha_creacion) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                    (nombre, apellido, dni, email, cohorte, datetime.now())
+                )
+                row = cursor.fetchone()
+                conn.commit()
+                if row:
+                    alumno_ids.append(row[0])
+                    results["alumnos"] += 1
+            except Exception as e:
+                conn.rollback()
+                if 'duplicate' not in str(e).lower():
+                    print(f"Error alumno: {e}")
+            finally:
+                cursor.close()
+        
+        # Inscribir alumnos a cursos
+        for alumno_id in alumno_ids:
+            for curso_id in curso_ids[:2]:  # Inscribir en los primeros 2 cursos
+                cursor = conn.cursor()
+                try:
+                    cursor.execute(
+                        "INSERT INTO inscripcion (alumno_id, curso_id, fecha_inscripcion) VALUES (%s, %s, %s)",
+                        (alumno_id, curso_id, date.today())
+                    )
+                    conn.commit()
+                    results["inscripciones"] += 1
+                except Exception as e:
+                    conn.rollback()
+                finally:
+                    cursor.close()
+        
+        # TPs
+        if curso_ids:
+            tps_data = [
+                (curso_ids[0], "TP1 - Variables y Tipos", "Ejercicios de variables", "2024-04-15"),
+                (curso_ids[0], "TP2 - Funciones", "Implementar funciones", "2024-05-01"),
+                (curso_ids[1] if len(curso_ids) > 1 else curso_ids[0], "TP1 - Lógica Proposicional", "Ejercicios de lógica", "2024-04-20"),
+            ]
+            
+            for curso_id, titulo, desc, fecha in tps_data:
+                cursor = conn.cursor()
+                try:
+                    cursor.execute(
+                        "INSERT INTO trabajo_practico (curso_id, titulo, descripcion, fecha_entrega, fecha_creacion) VALUES (%s, %s, %s, %s, %s)",
+                        (curso_id, titulo, desc, fecha, datetime.now())
+                    )
+                    conn.commit()
+                    results["tps"] += 1
+                except Exception as e:
+                    conn.rollback()
+                finally:
+                    cursor.close()
+        
+        return {
+            "status": "success",
+            "message": "Datos de prueba cargados",
+            "results": results
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
 # ============================================================================
 # Manejo de Errores Global
 # ============================================================================
