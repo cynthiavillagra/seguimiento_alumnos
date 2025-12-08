@@ -55,10 +55,10 @@ def get_alumno_service() -> AlumnoService:
     - Implementar retry logic
     """
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.alumno_repository_sqlite import AlumnoRepositorySQLite
+    from src.infrastructure.repositories.postgres.alumno_repository_postgres import AlumnoRepositoryPostgres
     
     conexion = get_db_connection()
-    alumno_repo = AlumnoRepositorySQLite(conexion)
+    alumno_repo = AlumnoRepositoryPostgres(conexion)
     return AlumnoService(alumno_repo)
 
 

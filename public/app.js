@@ -5,7 +5,7 @@
 
 // Configuración
 // En Vercel, la API está en la raíz (sin /api)
-const API_URL = window.location.hostname.includes('vercel.app') ? '' : '/api';
+const API_URL = '/api';
 
 // Estado de la aplicación
 const state = {

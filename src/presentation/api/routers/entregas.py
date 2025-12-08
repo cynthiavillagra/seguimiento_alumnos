@@ -26,14 +26,14 @@ router = APIRouter(
 
 def get_entrega_service() -> EntregaTPService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.entrega_tp_repository_sqlite import EntregaTPRepositorySQLite
-    from src.infrastructure.repositories.sqlite.tp_repository_sqlite import TrabajoPracticoRepositorySQLite
-    from src.infrastructure.repositories.sqlite.inscripcion_repository_sqlite import InscripcionRepositorySQLite
+    from src.infrastructure.repositories.postgres.entrega_repository_postgres import EntregaTPRepositoryPostgres
+    from src.infrastructure.repositories.postgres.tp_repository_postgres import TrabajoPracticoRepositoryPostgres
+    from src.infrastructure.repositories.postgres.inscripcion_repository_postgres import InscripcionRepositoryPostgres
     
     conexion = get_db_connection()
-    entrega_repo = EntregaTPRepositorySQLite(conexion)
-    tp_repo = TrabajoPracticoRepositorySQLite(conexion)
-    inscripcion_repo = InscripcionRepositorySQLite(conexion)
+    entrega_repo = EntregaTPRepositoryPostgres(conexion)
+    tp_repo = TrabajoPracticoRepositoryPostgres(conexion)
+    inscripcion_repo = InscripcionRepositoryPostgres(conexion)
     
     return EntregaTPService(entrega_repo, tp_repo, inscripcion_repo)
 

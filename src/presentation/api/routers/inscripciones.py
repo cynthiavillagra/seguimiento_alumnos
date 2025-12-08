@@ -29,14 +29,14 @@ router = APIRouter(
 
 def get_inscripcion_service() -> InscripcionService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.inscripcion_repository_sqlite import InscripcionRepositorySQLite
-    from src.infrastructure.repositories.sqlite.alumno_repository_sqlite import AlumnoRepositorySQLite
-    from src.infrastructure.repositories.sqlite.curso_repository_sqlite import CursoRepositorySQLite
+    from src.infrastructure.repositories.postgres.inscripcion_repository_postgres import InscripcionRepositoryPostgres
+    from src.infrastructure.repositories.postgres.alumno_repository_postgres import AlumnoRepositoryPostgres
+    from src.infrastructure.repositories.postgres.curso_repository_postgres import CursoRepositoryPostgres
     
     conexion = get_db_connection()
-    inscripcion_repo = InscripcionRepositorySQLite(conexion)
-    alumno_repo = AlumnoRepositorySQLite(conexion)
-    curso_repo = CursoRepositorySQLite(conexion)
+    inscripcion_repo = InscripcionRepositoryPostgres(conexion)
+    alumno_repo = AlumnoRepositoryPostgres(conexion)
+    curso_repo = CursoRepositoryPostgres(conexion)
     
     return InscripcionService(inscripcion_repo, alumno_repo, curso_repo)
 

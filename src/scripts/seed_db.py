@@ -8,26 +8,29 @@ import os
 sys.path.append(os.getcwd())
 
 from src.infrastructure.database.connection import get_db_connection, inicializar_base_de_datos
-from src.infrastructure.repositories.sqlite.curso_repository_sqlite import CursoRepositorySQLite
-from src.infrastructure.repositories.sqlite.alumno_repository_sqlite import AlumnoRepositorySQLite
-from src.infrastructure.repositories.sqlite.inscripcion_repository_sqlite import InscripcionRepositorySQLite
+from src.infrastructure.repositories.postgres.curso_repository_postgres import CursoRepositoryPostgres
+from src.infrastructure.repositories.postgres.alumno_repository_postgres import AlumnoRepositoryPostgres
+from src.infrastructure.repositories.postgres.inscripcion_repository_postgres import InscripcionRepositoryPostgres
 from src.domain.entities.curso import Curso
 from src.domain.entities.alumno import Alumno
 from src.domain.entities.inscripcion import Inscripcion
 from datetime import date
 
 def seed():
-    print("🌱 Iniciando seed de la base de datos...")
+    print("🌱 Iniciando seed de la base de datos PostgreSQL...")
     
     # Asegurar schema
-    inicializar_base_de_datos()
+    try:
+        inicializar_base_de_datos()
+    except Exception as e:
+        print(f"⚠️ Nota sobre schema: {e}")
     
     conn = get_db_connection()
     
     # Repos
-    curso_repo = CursoRepositorySQLite(conn)
-    alumno_repo = AlumnoRepositorySQLite(conn)
-    inscripcion_repo = InscripcionRepositorySQLite(conn)
+    curso_repo = CursoRepositoryPostgres(conn)
+    alumno_repo = AlumnoRepositoryPostgres(conn)
+    inscripcion_repo = InscripcionRepositoryPostgres(conn)
     
     # 1. Crear Cursos
     cursos_data = [

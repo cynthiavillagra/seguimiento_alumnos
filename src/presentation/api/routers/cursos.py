@@ -28,10 +28,10 @@ router = APIRouter(
 
 def get_curso_service() -> CursoService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.curso_repository_sqlite import CursoRepositorySQLite
+    from src.infrastructure.repositories.postgres.curso_repository_postgres import CursoRepositoryPostgres
     
     conexion = get_db_connection()
-    curso_repo = CursoRepositorySQLite(conexion)
+    curso_repo = CursoRepositoryPostgres(conexion)
     return CursoService(curso_repo)
 
 @router.post(

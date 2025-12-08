@@ -29,14 +29,14 @@ router = APIRouter(
 
 def get_asistencia_service() -> AsistenciaService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.asistencia_repository_sqlite import RegistroAsistenciaRepositorySQLite
-    from src.infrastructure.repositories.sqlite.clase_repository_sqlite import ClaseRepositorySQLite
-    from src.infrastructure.repositories.sqlite.inscripcion_repository_sqlite import InscripcionRepositorySQLite
+    from src.infrastructure.repositories.postgres.asistencia_repository_postgres import RegistroAsistenciaRepositoryPostgres
+    from src.infrastructure.repositories.postgres.clase_repository_postgres import ClaseRepositoryPostgres
+    from src.infrastructure.repositories.postgres.inscripcion_repository_postgres import InscripcionRepositoryPostgres
     
     conexion = get_db_connection()
-    asistencia_repo = RegistroAsistenciaRepositorySQLite(conexion)
-    clase_repo = ClaseRepositorySQLite(conexion)
-    inscripcion_repo = InscripcionRepositorySQLite(conexion)
+    asistencia_repo = RegistroAsistenciaRepositoryPostgres(conexion)
+    clase_repo = ClaseRepositoryPostgres(conexion)
+    inscripcion_repo = InscripcionRepositoryPostgres(conexion)
     
     return AsistenciaService(asistencia_repo, clase_repo, inscripcion_repo)
 

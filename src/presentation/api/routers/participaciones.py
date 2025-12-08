@@ -28,14 +28,14 @@ router = APIRouter(
 
 def get_participacion_service() -> ParticipacionService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.participacion_repository_sqlite import RegistroParticipacionRepositorySQLite
-    from src.infrastructure.repositories.sqlite.clase_repository_sqlite import ClaseRepositorySQLite
-    from src.infrastructure.repositories.sqlite.inscripcion_repository_sqlite import InscripcionRepositorySQLite
+    from src.infrastructure.repositories.postgres.participacion_repository_postgres import RegistroParticipacionRepositoryPostgres
+    from src.infrastructure.repositories.postgres.clase_repository_postgres import ClaseRepositoryPostgres
+    from src.infrastructure.repositories.postgres.inscripcion_repository_postgres import InscripcionRepositoryPostgres
     
     conexion = get_db_connection()
-    participacion_repo = RegistroParticipacionRepositorySQLite(conexion)
-    clase_repo = ClaseRepositorySQLite(conexion)
-    inscripcion_repo = InscripcionRepositorySQLite(conexion)
+    participacion_repo = RegistroParticipacionRepositoryPostgres(conexion)
+    clase_repo = ClaseRepositoryPostgres(conexion)
+    inscripcion_repo = InscripcionRepositoryPostgres(conexion)
     
     return ParticipacionService(participacion_repo, clase_repo, inscripcion_repo)
 

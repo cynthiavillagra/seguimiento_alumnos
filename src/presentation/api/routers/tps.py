@@ -27,12 +27,12 @@ router = APIRouter(
 
 def get_tp_service() -> TrabajoPracticoService:
     from src.infrastructure.database.connection import get_db_connection
-    from src.infrastructure.repositories.sqlite.tp_repository_sqlite import TrabajoPracticoRepositorySQLite
-    from src.infrastructure.repositories.sqlite.curso_repository_sqlite import CursoRepositorySQLite
+    from src.infrastructure.repositories.postgres.tp_repository_postgres import TrabajoPracticoRepositoryPostgres
+    from src.infrastructure.repositories.postgres.curso_repository_postgres import CursoRepositoryPostgres
     
     conexion = get_db_connection()
-    tp_repo = TrabajoPracticoRepositorySQLite(conexion)
-    curso_repo = CursoRepositorySQLite(conexion)
+    tp_repo = TrabajoPracticoRepositoryPostgres(conexion)
+    curso_repo = CursoRepositoryPostgres(conexion)
     
     return TrabajoPracticoService(tp_repo, curso_repo)
 
