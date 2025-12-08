@@ -2067,3 +2067,93 @@ body {
         width: 100%;
     }
 }
+
+/* ============================================================================
+   TPS EN TARJETA DE ALUMNO
+   ============================================================================ */
+
+.tps-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tp-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+}
+
+.tp-titulo {
+    font-weight: 600;
+    color: var(--gray-700);
+    min-width: 120px;
+}
+
+.tp-entrega-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.tp-estado-btn {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.tp-estado-btn:hover {
+    background: var(--gray-100);
+    transform: translateY(-1px);
+}
+
+.tp-estado-btn.selected {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.tp-estado-btn.no-entrego.selected {
+    background: var(--error);
+    border-color: var(--error);
+}
+
+.tp-nota-input {
+    width: 70px;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.no-tps {
+    color: var(--gray-500);
+    font-style: italic;
+    padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .tp-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tp-entrega-group {
+        width: 100%;
+    }
+
+    .tp-estado-btn {
+        flex: 1;
+        min-width: 80px;
+    }
+}

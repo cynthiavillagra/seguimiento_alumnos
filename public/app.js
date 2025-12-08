@@ -528,11 +528,11 @@ async function verDetalleClase(claseId) {
         });
         document.getElementById('clase-fecha').textContent = fechaFormateada;
 
+        // Cargar TPs de la materia PRIMERO (para que estén disponibles al crear las tarjetas)
+        await cargarTPsParaRegistro(clase.curso_id);
+
         // Cargar alumnos y mostrarlos con sus asistencias ya marcadas
         await cargarAlumnosParaEdicion(clase.curso_id, asistenciasMap);
-
-        // Cargar TPs de la materia
-        await cargarTPsParaRegistro(clase.curso_id);
 
         // Mostrar página
         showPage('registro-clase');
@@ -874,11 +874,11 @@ async function iniciarRegistroClase() {
         });
         document.getElementById('clase-fecha').textContent = fechaFormateada;
 
+        // Cargar TPs de la materia PRIMERO (para que estén disponibles al crear las tarjetas)
+        await cargarTPsParaRegistro(cursoId);
+
         // Cargar alumnos inscriptos en el curso
         await cargarAlumnosParaRegistro(cursoId);
-
-        // Cargar TPs de la materia
-        await cargarTPsParaRegistro(cursoId);
 
         showToast(`✅ Clase ${numeroClase} creada. Los cambios se guardan automáticamente.`, 'success');
 
@@ -950,6 +950,42 @@ function crearCardRegistroAlumno(alumno) {
     const card = document.createElement('div');
     card.className = 'alumno-registro-card';
     card.setAttribute('data-alumno-id', alumno.id);
+
+    // Obtener TPs del curso si existen
+    const tps = state.claseActual?.tps || [];
+
+    // Generar HTML para TPs
+    let tpsHTML = '';
+    if (tps.length > 0) {
+        tpsHTML = tps.map(tp => `
+            <div class="tp-item" data-tp-id="${tp.id}">
+                <span class="tp-titulo">${tp.titulo}</span>
+                <div class="tp-entrega-group">
+                    <button class="tp-estado-btn" onclick="marcarEntregaTPAlumno(${alumno.id}, ${tp.id}, 'entregado', event)">
+                        ✓ Entregado
+                    </button>
+                    <button class="tp-estado-btn" onclick="marcarEntregaTPAlumno(${alumno.id}, ${tp.id}, 'tarde', event)">
+                        ⏰ Tarde
+                    </button>
+                    <button class="tp-estado-btn no-entrego" onclick="marcarEntregaTPAlumno(${alumno.id}, ${tp.id}, 'no_entregado', event)">
+                        ✗ No Entregó
+                    </button>
+                    <input 
+                        type="number" 
+                        min="1" 
+                        max="10" 
+                        step="0.5"
+                        class="tp-nota-input" 
+                        placeholder="Nota"
+                        onchange="guardarNotaTPAlumno(${alumno.id}, ${tp.id}, this.value)"
+                    />
+                </div>
+            </div>
+        `).join('');
+    } else {
+        tpsHTML = '<p class="no-tps">No hay TPs registrados para este curso</p>';
+    }
+
     card.innerHTML = `
         <div class="alumno-registro-header">
             <div class="alumno-registro-nombre">${alumno.nombre_completo}</div>
@@ -985,30 +1021,11 @@ function crearCardRegistroAlumno(alumno) {
             </div>
         </div>
 
-        <!-- Trabajo Práctico -->
+        <!-- Trabajos Prácticos -->
         <div class="registro-section">
-            <label class="registro-label">Trabajo Práctico:</label>
-            <div class="tp-container">
-                <div class="tp-entrega">
-                    <button class="tp-btn" onclick="marcarTPEntregado(${alumno.id}, true)">
-                        ✓ Entregado
-                    </button>
-                    <button class="tp-btn" onclick="marcarTPEntregado(${alumno.id}, false)">
-                        ✗ No Entregado
-                    </button>
-                </div>
-                <div class="tp-calificacion">
-                    <label class="tp-label">Nota:</label>
-                    <input 
-                        type="number" 
-                        min="1" 
-                        max="10" 
-                        step="0.5"
-                        class="tp-nota-input" 
-                        placeholder="1-10"
-                        onchange="guardarNotaTP(${alumno.id}, this.value)"
-                    />
-                </div>
+            <label class="registro-label">Trabajos Prácticos:</label>
+            <div class="tps-lista" id="tps-alumno-${alumno.id}">
+                ${tpsHTML}
             </div>
         </div>
 
@@ -1039,6 +1056,38 @@ function crearCardRegistroAlumno(alumno) {
         ></textarea>
     `;
     return card;
+}
+
+// Marcar entrega de TP para un alumno específico
+function marcarEntregaTPAlumno(alumnoId, tpId, estado, event) {
+    // Actualizar UI
+    const btn = event.target;
+    const tpItem = btn.closest('.tp-item');
+    if (tpItem) {
+        tpItem.querySelectorAll('.tp-estado-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    // Guardar en state
+    if (!state.claseActual.entregasTPs[alumnoId]) {
+        state.claseActual.entregasTPs[alumnoId] = {};
+    }
+    state.claseActual.entregasTPs[alumnoId][tpId] = { estado };
+
+    showToast(`TP marcado como ${estado}`, 'success');
+}
+
+// Guardar nota de TP para alumno
+function guardarNotaTPAlumno(alumnoId, tpId, nota) {
+    if (!state.claseActual.entregasTPs[alumnoId]) {
+        state.claseActual.entregasTPs[alumnoId] = {};
+    }
+    if (!state.claseActual.entregasTPs[alumnoId][tpId]) {
+        state.claseActual.entregasTPs[alumnoId][tpId] = {};
+    }
+    state.claseActual.entregasTPs[alumnoId][tpId].nota = parseFloat(nota);
+
+    showToast(`Nota ${nota} guardada`, 'success');
 }
 
 // Cargar TPs de la materia para registro de entregas
