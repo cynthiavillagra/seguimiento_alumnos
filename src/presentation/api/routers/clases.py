@@ -49,19 +49,25 @@ def registrar_clase(
     service: ClaseService = Depends(get_clase_service)
 ):
     try:
+        print(f"Intentando crear clase: curso_id={data.curso_id}, fecha={data.fecha}, numero={data.numero_clase}")
         clase = service.registrar_clase(
             curso_id=data.curso_id,
             numero_clase=data.numero_clase,
             fecha=data.fecha,
             tema=data.tema
         )
+        print(f"Clase creada exitosamente: id={clase.id}")
         return ClaseResponseSchema.from_entity(clase)
     except CursoNoEncontradoException as e:
+        print(f"Curso no encontrado: {e}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except BusinessRuleException as e:
+        print(f"Error de regla de negocio: {e}")
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
-        print(f"Error inesperado al registrar clase: {e}")
+        print(f"Error inesperado al registrar clase: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
 @router.get(
@@ -76,8 +82,9 @@ def listar_clases_curso(
     try:
         clases = service.listar_clases_curso(curso_id)
         return [ClaseResponseSchema.from_entity(c) for c in clases]
-    except CursoNoEncontradoException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except CursoNoEncontradoException:
+        # Retornar lista vacía si el curso no existe (más amigable para el frontend)
+        return []
     except Exception as e:
         print(f"Error inesperado al listar clases: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")

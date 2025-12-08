@@ -718,9 +718,17 @@ async function iniciarRegistroClase() {
 
     try {
         // 1. Obtener número de clase (contando las existentes)
+        let clasesAnteriores = [];
         const clasesResponse = await fetch(`${API_URL}/clases/curso/${cursoId}`);
-        const clasesAnteriores = await clasesResponse.json();
-        const numeroClase = (clasesAnteriores.length || 0) + 1;
+        if (clasesResponse.ok) {
+            clasesAnteriores = await clasesResponse.json();
+        } else if (clasesResponse.status === 404) {
+            // Curso no tiene clases aún, está bien
+            clasesAnteriores = [];
+        } else {
+            console.warn('Error obteniendo clases anteriores:', clasesResponse.status);
+        }
+        const numeroClase = (Array.isArray(clasesAnteriores) ? clasesAnteriores.length : 0) + 1;
 
         // 2. CREAR LA CLASE EN LA BASE DE DATOS INMEDIATAMENTE
         const claseData = {
