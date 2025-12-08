@@ -193,27 +193,42 @@ def setup_database():
     Crea las tablas si no existen.
     """
     try:
-        from src.infrastructure.database.connection import inicializar_base_de_datos
-        inicializar_base_de_datos()
+        from src.infrastructure.database.connection import inicializar_base_de_datos, get_db_connection
         
-        # Opcional: Correr seed básico si no hay datos
-        from src.infrastructure.database.connection import get_db_connection
+        # Inicializar schema
+        result = inicializar_base_de_datos()
+        
+        # Verificar si hay cursos - en nueva transacción limpia
         conn = get_db_connection()
+        try:
+            conn.rollback()  # Asegurar estado limpio
+        except:
+            pass
+            
         cursor = conn.cursor()
         try:
             cursor.execute("SELECT COUNT(*) FROM curso")
             row = cursor.fetchone()
-            if row[0] == 0:
-                return {"status": "success", "message": "Schema inicializado. Tablas creadas."}
-            else:
-                return {"status": "success", "message": "Schema ya existe. No se realizaron cambios."}
+            conn.commit()
+            curso_count = row[0] if row else 0
+        except Exception as e:
+            conn.rollback()
+            curso_count = 0
         finally:
             cursor.close()
+        
+        return {
+            "status": "success", 
+            "message": f"Schema listo. {result.get('success', 0)} statements OK, {result.get('skipped', 0)} ya existían.",
+            "cursos_existentes": curso_count
+        }
                 
     except Exception as e:
+        import traceback
         return {
             "status": "error", 
             "message": str(e),
+            "traceback": traceback.format_exc(),
             "hint": "Verifica POSTGRES_URL en variables de entorno"
         }
 
