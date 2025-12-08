@@ -470,85 +470,158 @@ async function cargarHistorialClases(cursoId) {
 
 async function verDetalleClase(claseId) {
     try {
+        showToast('Cargando clase...', 'info');
+
         // Obtener datos de la clase
         const claseRes = await fetch(`${API_URL}/clases/${claseId}`);
+        if (!claseRes.ok) {
+            throw new Error('Error al obtener clase');
+        }
         const clase = await claseRes.json();
+
+        // Obtener el curso asociado
+        const curso = state.clases.find(c => c.id === clase.curso_id);
+        if (!curso) {
+            throw new Error('Curso no encontrado');
+        }
 
         // Obtener asistencias de la clase
         const asistenciasRes = await fetch(`${API_URL}/asistencias/clase/${claseId}`);
         let asistencias = [];
         if (asistenciasRes.ok) {
             asistencias = await asistenciasRes.json();
-            if (!Array.isArray(asistencias)) {
-                console.warn('Asistencias no es un array:', asistencias);
-                asistencias = [];
-            }
-        } else {
-            console.error('Error obteniendo asistencias:', asistenciasRes.status);
+            if (!Array.isArray(asistencias)) asistencias = [];
         }
 
-        // Guardar en state para edición
-        state.claseVisualizando = { clase, asistencias };
+        // Crear mapa de asistencias por alumno_id
+        const asistenciasMap = {};
+        asistencias.forEach(a => {
+            asistenciasMap[a.alumno_id] = a;
+        });
 
-        // Llenar el modal
-        document.getElementById('ver-clase-id').value = claseId;
-        document.getElementById('modal-clase-titulo').textContent = `Clase ${clase.numero_clase}`;
+        // Configurar state.claseActual con los datos existentes
+        state.claseActual = {
+            id: clase.id,
+            cursoId: clase.curso_id,
+            materia: curso.nombre_materia,
+            cohorte: curso.anio,
+            fecha: clase.fecha,
+            numeroClase: clase.numero_clase,
+            registros: {},
+            entregasTPs: {},
+            editando: true  // Flag para indicar que estamos editando
+        };
 
-        const fechaFormateada = new Date(clase.fecha).toLocaleDateString('es-AR', {
-            weekday: 'long',
+        // Ocultar selección, mostrar registro
+        document.getElementById('seleccion-clase').style.display = 'none';
+        document.getElementById('registro-asistencia').style.display = 'block';
+
+        // Actualizar título
+        document.getElementById('clase-titulo').textContent = `${curso.nombre_materia} - Cohorte ${curso.anio} (Clase ${clase.numero_clase})`;
+
+        // Formatear fecha
+        const fechaObj = new Date(clase.fecha + 'T00:00:00');
+        const fechaFormateada = fechaObj.toLocaleDateString('es-AR', {
             day: '2-digit',
             month: 'long',
             year: 'numeric'
         });
-        document.getElementById('ver-clase-fecha').textContent = fechaFormateada;
-        document.getElementById('ver-clase-tema').textContent = clase.tema || 'Sin tema especificado';
+        document.getElementById('clase-fecha').textContent = fechaFormateada;
 
-        // Contar estados
-        let presentes = 0, tardes = 0, ausentes = 0;
-        asistencias.forEach(a => {
-            if (a.estado === 'Presente') presentes++;
-            else if (a.estado === 'Tardanza') tardes++;
-            else if (a.estado === 'Ausente') ausentes++;
-        });
+        // Cargar alumnos y mostrarlos con sus asistencias ya marcadas
+        await cargarAlumnosParaEdicion(curso.anio, asistenciasMap);
 
-        document.getElementById('ver-presentes').textContent = presentes;
-        document.getElementById('ver-tardes').textContent = tardes;
-        document.getElementById('ver-ausentes').textContent = ausentes;
+        // Cargar TPs de la materia
+        await cargarTPsParaRegistro(clase.curso_id);
 
-        // Obtener nombres de alumnos
-        const alumnosRes = await fetch(`${API_URL}/alumnos`);
-        const alumnosData = await alumnosRes.json();
-        const alumnos = alumnosData.alumnos || [];
-        const alumnosMap = {};
-        alumnos.forEach(a => alumnosMap[a.id] = a);
+        // Mostrar página
+        showPage('registro-clase');
 
-        // Mostrar lista de asistencias
-        const asistenciasContainer = document.getElementById('ver-clase-asistencias');
-
-        if (asistencias.length === 0) {
-            asistenciasContainer.innerHTML = '<p>No hay registros de asistencia</p>';
-        } else {
-            asistenciasContainer.innerHTML = asistencias.map(a => {
-                const alumno = alumnosMap[a.alumno_id] || { nombre_completo: `Alumno #${a.alumno_id}` };
-                const estadoClass = a.estado === 'Presente' ? 'presente' :
-                    a.estado === 'Tardanza' ? 'tarde' : 'ausente';
-                const estadoIcon = a.estado === 'Presente' ? '✅' :
-                    a.estado === 'Tardanza' ? '⏰' : '❌';
-
-                return `
-                    <div class="asistencia-item ${estadoClass}">
-                        <span class="alumno-nombre">${alumno.nombre_completo}</span>
-                        <span class="estado-badge ${estadoClass}">${estadoIcon} ${a.estado}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        openModal('modal-ver-clase');
+        showToast(`✅ Editando Clase ${clase.numero_clase}`, 'success');
 
     } catch (error) {
         console.error('Error al cargar detalle de clase:', error);
-        showToast('Error al cargar detalle de la clase', 'error');
+        showToast('Error al cargar la clase', 'error');
+    }
+}
+
+// Cargar alumnos para edición (con asistencias pre-marcadas)
+async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
+    try {
+        let url = `${API_URL}/alumnos`;
+        if (cohorte) {
+            url += `?cohorte=${cohorte}`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+        const alumnos = data.alumnos || [];
+
+        state.alumnos = alumnos;
+
+        const container = document.getElementById('lista-registro-alumnos');
+
+        if (alumnos.length === 0) {
+            container.innerHTML = '<p>No hay alumnos en esta cohorte</p>';
+            return;
+        }
+
+        // Mapeo de estados backend -> frontend
+        const estadoMap = {
+            'Presente': 'presente',
+            'Ausente': 'ausente',
+            'Tardanza': 'tarde'
+        };
+
+        container.innerHTML = alumnos.map(alumno => {
+            // Verificar si ya tiene asistencia guardada
+            const asistenciaGuardada = asistenciasMap[alumno.id];
+            const estadoActual = asistenciaGuardada ? estadoMap[asistenciaGuardada.estado] : null;
+
+            // Inicializar registro con datos existentes
+            state.claseActual.registros[alumno.id] = {
+                asistencia: estadoActual,
+                asistenciaId: asistenciaGuardada?.id || null,
+                participacion: null,
+                observaciones: ''
+            };
+
+            return `
+                <div class="alumno-registro-card" data-alumno-id="${alumno.id}">
+                    <div class="alumno-info">
+                        <span class="alumno-nombre">${alumno.nombre_completo}</span>
+                    </div>
+                    <div class="asistencia-buttons">
+                        <button class="asistencia-btn ${estadoActual === 'presente' ? 'presente' : ''}" 
+                                onclick="marcarAsistencia(${alumno.id}, 'presente')">
+                            ✅ Presente
+                        </button>
+                        <button class="asistencia-btn ${estadoActual === 'tarde' ? 'tarde' : ''}" 
+                                onclick="marcarAsistencia(${alumno.id}, 'tarde')">
+                            ⏰ Tarde
+                        </button>
+                        <button class="asistencia-btn ${estadoActual === 'ausente' ? 'ausente' : ''}" 
+                                onclick="marcarAsistencia(${alumno.id}, 'ausente')">
+                            ❌ Ausente
+                        </button>
+                    </div>
+                    <div class="participacion-section">
+                        <select class="participacion-select" onchange="marcarParticipacion(${alumno.id}, this.value)">
+                            <option value="">Participación...</option>
+                            <option value="alta">🌟 Alta</option>
+                            <option value="media">👍 Media</option>
+                            <option value="baja">👎 Baja</option>
+                            <option value="nula">❌ Nula</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        actualizarContadores();
+
+    } catch (error) {
+        console.error('Error cargando alumnos:', error);
     }
 }
 
