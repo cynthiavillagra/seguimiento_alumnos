@@ -69,6 +69,19 @@ class ClaseRepositoryPostgres(ClaseRepositoryBase):
         finally:
             cursor.close()
 
+    def obtener_por_fecha(self, curso_id: int, fecha) -> Optional[Clase]:
+        """Obtiene una clase por curso y fecha"""
+        query = "SELECT id, curso_id, fecha, numero_clase, tema, fecha_creacion FROM clase WHERE curso_id = %s AND fecha = %s"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query, (curso_id, fecha))
+            row = cursor.fetchone()
+            self.conexion.commit()
+            return self._row_to_clase(row) if row else None
+        finally:
+            cursor.close()
+
     def actualizar(self, clase: Clase) -> Clase:
         if clase.id is None:
             raise ValueError("La clase debe tener un ID")
