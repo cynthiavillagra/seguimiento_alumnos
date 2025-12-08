@@ -36,7 +36,10 @@ class DatabaseConnection:
                     print(f"Intentando conectar a Postgres... (URL length: {len(db_url)})")
                     
                     # Forzar SSL si no está en la URL (común en Neon/Vercel)
-                    connect_args = {'cursor_factory': RealDictCursor}
+                    connect_args = {
+                        'cursor_factory': RealDictCursor,
+                        'connect_timeout': 10
+                    }
                     if 'sslmode' not in db_url:
                         connect_args['sslmode'] = 'require'
                         
