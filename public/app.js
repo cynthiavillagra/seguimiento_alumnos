@@ -1021,6 +1021,10 @@ window.guardarTP = guardarTP;
 window.crearAlumno = crearAlumno;
 window.editarAlumno = editarAlumno;
 window.eliminarAlumno = eliminarAlumno;
+// Inscripciones
+window.gestionarInscripciones = gestionarInscripciones;
+window.agregarInscripcion = agregarInscripcion;
+window.eliminarInscripcion = eliminarInscripcion;
 // Seed functions
 window.cargarDatosPrueba = cargarDatosPrueba;
 window.borrarDatosPrueba = borrarDatosPrueba;
@@ -1204,6 +1208,7 @@ async function loadAdminAlumnos() {
                     </div>
                 </div>
                 <div class="admin-card-actions">
+                    <button class="btn-edit" onclick="gestionarInscripciones(${alumno.id}, '${alumno.apellido}, ${alumno.nombre}')">📚 Materias</button>
                     <button class="btn-edit" onclick="editarAlumno(${alumno.id})">✏️ Editar</button>
                     <button class="btn-delete" onclick="eliminarAlumno(${alumno.id})">🗑️ Eliminar</button>
                 </div>
@@ -1558,6 +1563,133 @@ async function borrarTodo() {
         }
     } catch (error) {
         showToast('Error al borrar datos', 'error');
+        console.error(error);
+    }
+}
+
+// ============================================================================
+// INSCRIPCIONES (Materias del alumno)
+// ============================================================================
+
+async function gestionarInscripciones(alumnoId, alumnoNombre) {
+    document.getElementById('inscripcion-alumno-id').value = alumnoId;
+    document.getElementById('modal-inscripciones-titulo').textContent = `Materias de ${alumnoNombre}`;
+
+    // Cargar cursos disponibles
+    try {
+        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosData = await cursosRes.json();
+        const cursos = cursosData.cursos || [];
+
+        const select = document.getElementById('inscripcion-curso');
+        select.innerHTML = '<option value="">Seleccionar curso...</option>' +
+            cursos.map(c => `<option value="${c.id}">${c.nombre_materia} (${c.anio})</option>`).join('');
+    } catch (e) {
+        console.error('Error cargando cursos:', e);
+    }
+
+    // Cargar inscripciones actuales
+    await cargarInscripcionesAlumno(alumnoId);
+
+    openModal('modal-inscripciones');
+}
+
+async function cargarInscripcionesAlumno(alumnoId) {
+    const container = document.getElementById('inscripciones-list');
+    container.innerHTML = '<p class="loading">Cargando inscripciones...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/inscripciones/alumno/${alumnoId}`);
+        const data = await response.json();
+        // La API devuelve un array directamente
+        const inscripciones = Array.isArray(data) ? data : (data.inscripciones || []);
+
+        if (inscripciones.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="padding: 1rem;">
+                    <p>No está inscrito en ninguna materia</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Obtener nombres de cursos
+        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosData = await cursosRes.json();
+        const cursos = cursosData.cursos || [];
+        const cursosMap = {};
+        cursos.forEach(c => cursosMap[c.id] = c);
+
+        container.innerHTML = inscripciones.map(insc => {
+            const curso = cursosMap[insc.curso_id] || {};
+            return `
+                <div class="admin-card" style="padding: 0.75rem;">
+                    <div class="admin-card-info">
+                        <div class="admin-card-title">${curso.nombre_materia || 'Curso #' + insc.curso_id}</div>
+                        <div class="admin-card-subtitle">${curso.anio || ''} - ${curso.cuatrimestre ? curso.cuatrimestre + '° cuatrimestre' : ''}</div>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="btn-delete" onclick="eliminarInscripcion(${insc.id})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error cargando inscripciones:', error);
+        container.innerHTML = '<p class="loading">Error al cargar inscripciones</p>';
+    }
+}
+
+async function agregarInscripcion() {
+    const alumnoId = document.getElementById('inscripcion-alumno-id').value;
+    const cursoId = document.getElementById('inscripcion-curso').value;
+
+    if (!cursoId) {
+        showToast('Selecciona un curso', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/inscripciones`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                alumno_id: parseInt(alumnoId),
+                curso_id: parseInt(cursoId)
+            })
+        });
+
+        if (response.ok) {
+            showToast('Inscripción agregada', 'success');
+            document.getElementById('inscripcion-curso').value = '';
+            await cargarInscripcionesAlumno(alumnoId);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Error al inscribir', 'error');
+        }
+    } catch (error) {
+        showToast('Error al agregar inscripción', 'error');
+        console.error(error);
+    }
+}
+
+async function eliminarInscripcion(inscripcionId) {
+    if (!confirm('¿Eliminar esta inscripción?')) return;
+
+    const alumnoId = document.getElementById('inscripcion-alumno-id').value;
+
+    try {
+        const response = await fetch(`${API_URL}/inscripciones/${inscripcionId}`, { method: 'DELETE' });
+
+        if (response.ok) {
+            showToast('Inscripción eliminada', 'success');
+            await cargarInscripcionesAlumno(alumnoId);
+        } else {
+            showToast('Error al eliminar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al eliminar inscripción', 'error');
         console.error(error);
     }
 }

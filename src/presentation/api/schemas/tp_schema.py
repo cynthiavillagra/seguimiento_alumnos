@@ -10,7 +10,7 @@ from datetime import date
 class TPCreateSchema(BaseModel):
     curso_id: int = Field(..., gt=0)
     titulo: str = Field(..., min_length=1)
-    fecha_entrega: date
+    fecha_entrega: Optional[date] = None
     descripcion: Optional[str] = None
 
 class TPUpdateSchema(BaseModel):
@@ -22,9 +22,9 @@ class TPResponseSchema(BaseModel):
     id: int
     curso_id: int
     titulo: str
-    fecha_entrega: date
-    descripcion: Optional[str]
-    fecha_creacion: Optional[str]
+    fecha_entrega: Optional[date] = None
+    descripcion: Optional[str] = None
+    fecha_creacion: Optional[str] = None
 
     @classmethod
     def from_entity(cls, tp) -> 'TPResponseSchema':
