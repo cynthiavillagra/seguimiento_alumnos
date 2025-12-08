@@ -42,6 +42,10 @@ class TrabajoPracticoService:
              raise CursoNoEncontradoException(f"Curso {curso_id} no encontrado")
         return self.tp_repo.obtener_por_curso(curso_id)
 
+    def listar_todos_tps(self) -> List[TrabajoPractico]:
+        """Lista todos los TPs de todos los cursos"""
+        return self.tp_repo.obtener_todos()
+
     def actualizar_tp(
         self, 
         tp_id: int, 

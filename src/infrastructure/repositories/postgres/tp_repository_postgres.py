@@ -69,6 +69,19 @@ class TrabajoPracticoRepositoryPostgres(TrabajoPracticoRepositoryBase):
         finally:
             cursor.close()
 
+    def obtener_todos(self) -> List[TrabajoPractico]:
+        """Obtiene todos los TPs"""
+        query = "SELECT id, curso_id, titulo, descripcion, fecha_entrega, fecha_creacion FROM trabajo_practico ORDER BY fecha_entrega"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            self.conexion.commit()
+            return [self._row_to_tp(row) for row in rows]
+        finally:
+            cursor.close()
+
     def actualizar(self, tp: TrabajoPractico) -> TrabajoPractico:
         if tp.id is None:
             raise ValueError("El TP debe tener un ID")

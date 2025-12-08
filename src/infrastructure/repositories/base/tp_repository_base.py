@@ -22,6 +22,10 @@ class TrabajoPracticoRepositoryBase(ABC):
         pass
     
     @abstractmethod
+    def obtener_todos(self) -> List[TrabajoPractico]:
+        pass
+    
+    @abstractmethod
     def actualizar(self, tp: TrabajoPractico) -> TrabajoPractico:
         pass
     

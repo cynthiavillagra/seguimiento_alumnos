@@ -81,6 +81,22 @@ def obtener_tp(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
 @router.get(
+    "/",
+    response_model=List[TPResponseSchema],
+    summary="Listar todos los TPs"
+)
+def listar_todos_tps(
+    service: TrabajoPracticoService = Depends(get_tp_service)
+):
+    """Lista todos los TPs de todos los cursos"""
+    try:
+        tps = service.listar_todos_tps()
+        return [TPResponseSchema.from_entity(tp) for tp in tps]
+    except Exception as e:
+        print(f"Error inesperado al listar TPs: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+
+@router.get(
     "/curso/{curso_id}",
     response_model=List[TPResponseSchema],
     summary="Listar TPs de un curso"
