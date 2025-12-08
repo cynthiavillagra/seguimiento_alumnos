@@ -560,6 +560,7 @@ async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
         state.alumnos = alumnos;
 
         const container = document.getElementById('lista-registro-alumnos');
+        container.innerHTML = '';
 
         if (alumnos.length === 0) {
             container.innerHTML = '<p>No hay alumnos en esta cohorte</p>';
@@ -573,7 +574,7 @@ async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
             'Tardanza': 'tarde'
         };
 
-        container.innerHTML = alumnos.map(alumno => {
+        alumnos.forEach(alumno => {
             // Verificar si ya tiene asistencia guardada
             const asistenciaGuardada = asistenciasMap[alumno.id];
             const estadoActual = asistenciaGuardada ? estadoMap[asistenciaGuardada.estado] : null;
@@ -583,40 +584,31 @@ async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
                 asistencia: estadoActual,
                 asistenciaId: asistenciaGuardada?.id || null,
                 participacion: null,
+                tpEntregado: null,
+                notaTP: null,
+                actitud: null,
                 observaciones: ''
             };
 
-            return `
-                <div class="alumno-registro-card" data-alumno-id="${alumno.id}">
-                    <div class="alumno-info">
-                        <span class="alumno-nombre">${alumno.nombre_completo}</span>
-                    </div>
-                    <div class="asistencia-buttons">
-                        <button class="asistencia-btn ${estadoActual === 'presente' ? 'presente' : ''}" 
-                                onclick="marcarAsistencia(${alumno.id}, 'presente')">
-                            ✅ Presente
-                        </button>
-                        <button class="asistencia-btn ${estadoActual === 'tarde' ? 'tarde' : ''}" 
-                                onclick="marcarAsistencia(${alumno.id}, 'tarde')">
-                            ⏰ Tarde
-                        </button>
-                        <button class="asistencia-btn ${estadoActual === 'ausente' ? 'ausente' : ''}" 
-                                onclick="marcarAsistencia(${alumno.id}, 'ausente')">
-                            ❌ Ausente
-                        </button>
-                    </div>
-                    <div class="participacion-section">
-                        <select class="participacion-select" onchange="marcarParticipacion(${alumno.id}, this.value)">
-                            <option value="">Participación...</option>
-                            <option value="alta">🌟 Alta</option>
-                            <option value="media">👍 Media</option>
-                            <option value="baja">👎 Baja</option>
-                            <option value="nula">❌ Nula</option>
-                        </select>
-                    </div>
-                </div>
-            `;
-        }).join('');
+            // Usar la misma función que en el registro
+            const card = crearCardRegistroAlumno(alumno);
+            container.appendChild(card);
+
+            // Marcar la asistencia si ya existe
+            if (estadoActual) {
+                const buttons = card.querySelectorAll('.asistencia-btn');
+                buttons.forEach(btn => {
+                    const btnText = btn.textContent.toLowerCase();
+                    if (estadoActual === 'presente' && btnText.includes('presente')) {
+                        btn.classList.add('presente');
+                    } else if (estadoActual === 'ausente' && btnText.includes('ausente')) {
+                        btn.classList.add('ausente');
+                    } else if (estadoActual === 'tarde' && btnText.includes('tarde')) {
+                        btn.classList.add('tarde');
+                    }
+                });
+            }
+        });
 
         actualizarContadores();
 
