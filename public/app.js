@@ -46,6 +46,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================================
+// Modales
+// ============================================================================
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Exportar funciones de modal
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+// ============================================================================
 // Navegación
 // ============================================================================
 
@@ -996,6 +1018,7 @@ window.abrirModalTP = abrirModalTP;
 window.editarTP = editarTP;
 window.eliminarTP = eliminarTP;
 window.guardarTP = guardarTP;
+window.editarAlumno = editarAlumno;
 window.eliminarAlumno = eliminarAlumno;
 // Seed functions
 window.cargarDatosPrueba = cargarDatosPrueba;
@@ -1180,7 +1203,7 @@ async function loadAdminAlumnos() {
                     </div>
                 </div>
                 <div class="admin-card-actions">
-                    <button class="btn-edit" onclick="verFichaAlumno(${alumno.id})">📋 Ver Ficha</button>
+                    <button class="btn-edit" onclick="editarAlumno(${alumno.id})">✏️ Editar</button>
                     <button class="btn-delete" onclick="eliminarAlumno(${alumno.id})">🗑️ Eliminar</button>
                 </div>
             </div>
@@ -1208,6 +1231,31 @@ async function eliminarAlumno(id) {
         }
     } catch (error) {
         showToast('Error al eliminar alumno', 'error');
+    }
+}
+
+async function editarAlumno(id) {
+    try {
+        const response = await fetch(`${API_URL}/alumnos/${id}`);
+        const alumno = await response.json();
+
+        // Llenar el modal con los datos del alumno
+        document.getElementById('nuevo-alumno-nombre').value = alumno.nombre || '';
+        document.getElementById('nuevo-alumno-apellido').value = alumno.apellido || '';
+        document.getElementById('nuevo-alumno-dni').value = alumno.dni || '';
+        document.getElementById('nuevo-alumno-email').value = alumno.email || '';
+        document.getElementById('nuevo-alumno-cohorte').value = alumno.cohorte || '';
+
+        // Guardar el ID para la actualización
+        window.currentEditAlumnoId = id;
+
+        // Cambiar título y abrir modal
+        const modalTitle = document.querySelector('#modal-nuevo-alumno .modal-header h2');
+        if (modalTitle) modalTitle.textContent = 'Editar Alumno';
+
+        openModal('modal-nuevo-alumno');
+    } catch (error) {
+        showToast('Error al cargar alumno', 'error');
     }
 }
 
