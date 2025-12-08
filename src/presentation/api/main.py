@@ -141,7 +141,7 @@ if not os.environ.get("VERCEL"):
 # ============================================================================
 
 @app.get(
-    "/",
+    "/api",
     tags=["Health"],
     summary="Health check",
     description="Verifica que la API esté funcionando"
@@ -158,7 +158,7 @@ def root():
 
 
 @app.get(
-    "/health",
+    "/api/health",
     tags=["Health"],
     summary="Health check detallado"
 )
@@ -183,7 +183,7 @@ def health_check():
 
 
 @app.get(
-    "/setup",
+    "/api/setup",
     tags=["Admin"],
     summary="Inicializar Base de Datos (First Run)"
 )
@@ -199,14 +199,16 @@ def setup_database():
         # Opcional: Correr seed básico si no hay datos
         from src.infrastructure.database.connection import get_db_connection
         conn = get_db_connection()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) as count FROM curso")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM curso")
             row = cursor.fetchone()
-            if row['count'] == 0:
-                # Si está vacío, podríamos correr el seed aquí o simplemente retornar mensaje
+            if row[0] == 0:
                 return {"status": "success", "message": "Schema inicializado. Tablas creadas."}
             else:
                 return {"status": "success", "message": "Schema ya existe. No se realizaron cambios."}
+        finally:
+            cursor.close()
                 
     except Exception as e:
         return {
@@ -216,7 +218,7 @@ def setup_database():
         }
 
 @app.get(
-    "/debug",
+    "/api/debug",
     tags=["Admin"],
     summary="Debug Connection"
 )
