@@ -137,19 +137,22 @@ function loadPageData(pageName) {
 async function loadDashboardData() {
     try {
         const url = `${API_URL}/cursos`;
-        console.log('Cargando clases desde:', url);
+        console.log('Cargando cursos desde:', url);
 
         const response = await fetch(url);
         const data = await response.json();
 
-        console.log('Clases recibidas:', data);
+        console.log('Cursos recibidos:', data);
 
         state.clases = data.cursos || [];
         renderClasesCards(state.clases);
 
+        // Cargar últimas clases registradas de todos los cursos
+        cargarUltimasClases();
+
     } catch (error) {
-        console.error('Error al cargar clases:', error);
-        showToast('Error al cargar clases', 'error');
+        console.error('Error al cargar cursos:', error);
+        showToast('Error al cargar cursos', 'error');
     }
 }
 
@@ -336,6 +339,79 @@ function animateNumber(element, start, end, duration) {
 // ============================================================================
 // Historial de Clases
 // ============================================================================
+
+// Cargar últimas clases de TODOS los cursos (para el Dashboard)
+async function cargarUltimasClases() {
+    const container = document.getElementById('ultimas-clases-container');
+    if (!container) return;
+
+    container.innerHTML = '<p class="loading">Cargando últimas clases...</p>';
+
+    try {
+        // Obtener clases de todos los cursos
+        const cursos = state.clases || [];
+        let todasLasClases = [];
+
+        // Crear mapa de cursos para obtener nombres
+        const cursosMap = {};
+        cursos.forEach(c => cursosMap[c.id] = c);
+
+        // Obtener clases de cada curso
+        for (const curso of cursos) {
+            const response = await fetch(`${API_URL}/clases/curso/${curso.id}`);
+            if (response.ok) {
+                const clases = await response.json();
+                // Agregar info del curso a cada clase
+                clases.forEach(clase => {
+                    clase.cursoNombre = curso.nombre_materia || curso.materia;
+                    clase.cursoAnio = curso.anio;
+                });
+                todasLasClases = todasLasClases.concat(clases);
+            }
+        }
+
+        if (todasLasClases.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>🎓 No hay clases registradas todavía</p>
+                    <p>Selecciona un curso arriba y haz click en "Registrar" para agregar tu primera clase</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Ordenar por fecha descendente y tomar las últimas 10
+        todasLasClases.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        const ultimasClases = todasLasClases.slice(0, 10);
+
+        container.innerHTML = ultimasClases.map(clase => {
+            const fecha = new Date(clase.fecha).toLocaleDateString('es-AR', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short'
+            });
+
+            return `
+                <div class="historial-clase-card" onclick="verDetalleClase(${clase.id})">
+                    <div class="clase-card-info">
+                        <div class="clase-card-numero">${clase.cursoNombre} - Clase ${clase.numero_clase}</div>
+                        <div class="clase-card-fecha">${fecha}</div>
+                        <div class="clase-card-tema">${clase.tema || 'Sin tema'}</div>
+                    </div>
+                    <div class="clase-card-actions">
+                        <button class="btn-sm" onclick="event.stopPropagation(); verDetalleClase(${clase.id})">
+                            👁️ Ver / Editar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error cargando últimas clases:', error);
+        container.innerHTML = '<p class="error">Error al cargar clases</p>';
+    }
+}
 
 async function cargarHistorialClases(cursoId) {
     const container = document.getElementById('historial-clases-container');

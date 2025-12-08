@@ -1,16 +1,25 @@
 <!-- Dashboard Page -->
 <div id="page-dashboard" class="page active">
     <div class="page-header">
-        <h1>Mis Clases</h1>
-        <p class="subtitle">Selecciona una clase para ver detalles o registrar asistencia</p>
+        <h1>Mis Cursos</h1>
+        <p class="subtitle">Selecciona un curso para ver detalles, registrar asistencia o ver clases anteriores</p>
     </div>
 
-    <!-- Grid de Clases -->
+    <!-- Grid de Cursos -->
     <div id="clases-grid" class="clases-grid">
         <!-- Se llena dinámicamente con JavaScript -->
         <div class="loading-clases">
             <span style="font-size: 3rem;">⏳</span>
-            <p>Cargando clases...</p>
+            <p>Cargando cursos...</p>
+        </div>
+    </div>
+
+    <!-- Últimas Clases Registradas -->
+    <div class="section" style="margin-top: 2rem;">
+        <h2>📅 Últimas Clases Registradas</h2>
+        <p class="subtitle">Clases que ya guardaste - click para ver o editar asistencias</p>
+        <div id="ultimas-clases-container" class="historial-clases">
+            <p class="loading">Cargando últimas clases...</p>
         </div>
     </div>
 </div>
