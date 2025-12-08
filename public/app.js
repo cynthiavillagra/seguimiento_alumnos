@@ -350,7 +350,8 @@ async function iniciarRegistroClase() {
         materia: curso.nombre_materia,
         cohorte: curso.anio,
         fecha: fecha,
-        registros: {}
+        registros: {},
+        entregasTPs: {}  // Nuevo: para guardar entregas de TPs
     };
 
     // Ocultar selección, mostrar registro
@@ -371,6 +372,9 @@ async function iniciarRegistroClase() {
 
     // Cargar alumnos filtrados por cohorte del curso
     await cargarAlumnosParaRegistro(curso.anio);
+
+    // Cargar TPs de la materia
+    await cargarTPsParaRegistro(cursoId);
 }
 
 async function cargarAlumnosParaRegistro(cohorte) {
@@ -426,6 +430,7 @@ async function cargarAlumnosParaRegistro(cohorte) {
 function crearCardRegistroAlumno(alumno) {
     const card = document.createElement('div');
     card.className = 'alumno-registro-card';
+    card.setAttribute('data-alumno-id', alumno.id);
     card.innerHTML = `
         <div class="alumno-registro-header">
             <div class="alumno-registro-nombre">${alumno.nombre_completo}</div>
@@ -515,6 +520,97 @@ function crearCardRegistroAlumno(alumno) {
         ></textarea>
     `;
     return card;
+}
+
+// Cargar TPs de la materia para registro de entregas
+async function cargarTPsParaRegistro(cursoId) {
+    const container = document.getElementById('lista-tps-clase');
+    const seccion = document.getElementById('seccion-tps');
+
+    if (!container || !seccion) return;
+
+    try {
+        const response = await fetch(`${API_URL}/tps/curso/${cursoId}`);
+        const data = await response.json();
+        const tps = Array.isArray(data) ? data : (data.tps || []);
+
+        if (tps.length === 0) {
+            seccion.style.display = 'none';
+            return;
+        }
+
+        // Guardar TPs en el state
+        state.claseActual.tps = tps;
+
+        // Mostrar sección de TPs
+        seccion.style.display = 'block';
+
+        // Obtener alumnos registrados
+        const alumnosIds = Object.keys(state.claseActual.registros);
+
+        container.innerHTML = tps.map(tp => `
+            <div class="tp-registro-card" data-tp-id="${tp.id}">
+                <div class="tp-registro-header">
+                    <div class="tp-info">
+                        <h4>${tp.titulo}</h4>
+                        <span class="tp-fecha">Entrega: ${tp.fecha_entrega || 'Sin fecha'}</span>
+                    </div>
+                </div>
+                <div class="tp-alumnos-entregas" id="entregas-tp-${tp.id}">
+                    ${alumnosIds.map(alumnoId => {
+            const registro = state.claseActual.registros[alumnoId];
+            // Buscar nombre del alumno
+            const alumnoCard = document.querySelector(`[data-alumno-id="${alumnoId}"]`);
+            const nombreAlumno = alumnoCard ? alumnoCard.querySelector('.alumno-registro-nombre').textContent : `Alumno ${alumnoId}`;
+            return `
+                            <div class="entrega-row" data-alumno-id="${alumnoId}">
+                                <span class="alumno-nombre">${nombreAlumno}</span>
+                                <div class="entrega-buttons">
+                                    <button class="entrega-btn" onclick="marcarEntregaTP(${tp.id}, ${alumnoId}, 'a_tiempo')">⏰ A tiempo</button>
+                                    <button class="entrega-btn" onclick="marcarEntregaTP(${tp.id}, ${alumnoId}, 'tarde')">⚠️ Tarde</button>
+                                    <button class="entrega-btn" onclick="marcarEntregaTP(${tp.id}, ${alumnoId}, 'muy_tarde')">🕙 Muy tarde</button>
+                                    <button class="entrega-btn entrega-no" onclick="marcarEntregaTP(${tp.id}, ${alumnoId}, 'no_entrego')">✗ No entregó</button>
+                                </div>
+                            </div>
+                        `;
+        }).join('')}
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error al cargar TPs:', error);
+        seccion.style.display = 'none';
+    }
+}
+
+// Marcar entrega de TP por alumno
+function marcarEntregaTP(tpId, alumnoId, estado) {
+    // Inicializar objeto de entregas si no existe
+    if (!state.claseActual.entregasTPs[tpId]) {
+        state.claseActual.entregasTPs[tpId] = {};
+    }
+
+    // Guardar estado de entrega
+    state.claseActual.entregasTPs[tpId][alumnoId] = estado;
+
+    // Actualizar UI
+    const row = document.querySelector(`#entregas-tp-${tpId} [data-alumno-id="${alumnoId}"]`);
+    if (row) {
+        row.querySelectorAll('.entrega-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+
+    const estadoTexto = {
+        'a_tiempo': 'a tiempo',
+        'tarde': 'tarde',
+        'muy_tarde': 'muy tarde',
+        'no_entrego': 'no entregado'
+    };
+
+    showToast(`TP marcado como ${estadoTexto[estado]}`, 'info');
 }
 
 function marcarAsistencia(alumnoId, estado) {
