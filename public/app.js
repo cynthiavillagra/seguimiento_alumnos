@@ -1124,6 +1124,11 @@ async function marcarAsistencia(alumnoId, estado) {
     const claseId = state.claseActual.id;
     const registro = state.claseActual.registros[alumnoId];
 
+    if (!registro) {
+        showToast('Error: Registro no encontrado', 'error');
+        return;
+    }
+
     // Mapeo de estados frontend -> backend
     const mapEstado = {
         'presente': 'Presente',
@@ -1132,11 +1137,24 @@ async function marcarAsistencia(alumnoId, estado) {
     };
 
     // Actualizar UI inmediatamente (feedback visual rápido)
-    const card = event.target.closest('.alumno-registro-card');
-    card.querySelectorAll('.asistencia-btn').forEach(btn => {
-        btn.classList.remove('presente', 'ausente', 'tarde');
-    });
-    event.target.classList.add(estado);
+    const card = document.querySelector(`.alumno-registro-card[data-alumno-id="${alumnoId}"]`);
+    if (card) {
+        card.querySelectorAll('.asistencia-btn').forEach(btn => {
+            btn.classList.remove('presente', 'ausente', 'tarde');
+        });
+        // Encontrar el botón correcto y marcarlo
+        const buttons = card.querySelectorAll('.asistencia-btn');
+        buttons.forEach(btn => {
+            const btnText = btn.textContent.toLowerCase();
+            if (estado === 'presente' && btnText.includes('presente')) {
+                btn.classList.add('presente');
+            } else if (estado === 'ausente' && btnText.includes('ausente')) {
+                btn.classList.add('ausente');
+            } else if (estado === 'tarde' && btnText.includes('tarde')) {
+                btn.classList.add('tarde');
+            }
+        });
+    }
 
     try {
         // Si ya tiene un ID de asistencia guardado, actualizar
@@ -1152,6 +1170,8 @@ async function marcarAsistencia(alumnoId, estado) {
                 registro.asistencia = estado;
                 showToast(`✅ ${estado.charAt(0).toUpperCase() + estado.slice(1)} (actualizado)`, 'success');
             } else {
+                const errText = await response.text();
+                console.error('Error response:', errText);
                 throw new Error('Error al actualizar');
             }
         } else {
@@ -1174,6 +1194,8 @@ async function marcarAsistencia(alumnoId, estado) {
                 registro.asistenciaId = nuevaAsistencia.id;  // Guardar ID para futuras actualizaciones
                 showToast(`✅ ${estado.charAt(0).toUpperCase() + estado.slice(1)} (guardado)`, 'success');
             } else {
+                const errText = await response.text();
+                console.error('Error response:', errText);
                 throw new Error('Error al guardar');
             }
         }
@@ -1184,8 +1206,6 @@ async function marcarAsistencia(alumnoId, estado) {
     } catch (error) {
         console.error('Error guardando asistencia:', error);
         showToast('⚠️ Error al guardar, reintenta', 'error');
-        // Revertir UI en caso de error
-        event.target.classList.remove(estado);
     }
 }
 
