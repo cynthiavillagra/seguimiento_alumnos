@@ -167,8 +167,9 @@ def health_check():
     try:
         from src.infrastructure.database.connection import get_db_connection
         conexion = get_db_connection()
-        cursor = conexion.cursor()
-        cursor.execute("SELECT 1")
+        # Verificar conexión simple
+        with conexion.cursor() as cursor:
+            cursor.execute("SELECT 1")
         db_status = "healthy"
     except Exception as e:
         db_status = f"unhealthy: {str(e)}"
@@ -179,6 +180,40 @@ def health_check():
         "version": "1.0.0",
         "environment": "vercel" if os.environ.get("VERCEL") else "local"
     }
+
+
+@app.get(
+    "/setup",
+    tags=["Admin"],
+    summary="Inicializar Base de Datos (First Run)"
+)
+def setup_database():
+    """
+    Endpoint temporal para inicializar la base de datos en Vercel.
+    Crea las tablas si no existen.
+    """
+    try:
+        from src.infrastructure.database.connection import inicializar_base_de_datos
+        inicializar_base_de_datos()
+        
+        # Opcional: Correr seed básico si no hay datos
+        from src.infrastructure.database.connection import get_db_connection
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) as count FROM curso")
+            row = cursor.fetchone()
+            if row['count'] == 0:
+                # Si está vacío, podríamos correr el seed aquí o simplemente retornar mensaje
+                return {"status": "success", "message": "Schema inicializado. Tablas creadas."}
+            else:
+                return {"status": "success", "message": "Schema ya existe. No se realizaron cambios."}
+                
+    except Exception as e:
+        return {
+            "status": "error", 
+            "message": str(e),
+            "hint": "Verifica POSTGRES_URL en variables de entorno"
+        }
 
 
 # ============================================================================
