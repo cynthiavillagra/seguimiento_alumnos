@@ -1,34 +1,26 @@
 """
 Implementación PostgreSQL: InscripcionRepository
-Sistema de Seguimiento de Alumnos
+Compatible con pg8000.
 """
 
-import psycopg2
 from typing import List, Optional
 from datetime import datetime, date
 
 from src.infrastructure.repositories.base.inscripcion_repository_base import InscripcionRepositoryBase
 from src.domain.entities.inscripcion import Inscripcion
-from src.domain.exceptions.domain_exceptions import (
-    InscripcionDuplicadaException,
-    InscripcionNoEncontradaException
-)
+from src.domain.exceptions.domain_exceptions import InscripcionDuplicadaException
 
 
 class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
-    """
-    Implementación PostgreSQL del repositorio de Inscripción.
-    """
     
     def __init__(self, conexion):
         self.conexion = conexion
 
     def crear(self, inscripcion: Inscripcion) -> Inscripcion:
-        """Crea una nueva inscripción"""
         query = """
             INSERT INTO inscripcion (alumno_id, curso_id, fecha_inscripcion)
             VALUES (%s, %s, %s)
-            RETURNING id, fecha_inscripcion;
+            RETURNING id, fecha_inscripcion
         """
         params = (
             inscripcion.alumno_id,
@@ -36,80 +28,86 @@ class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
             inscripcion.fecha_inscripcion or date.today()
         )
         
+        cursor = self.conexion.cursor()
         try:
-            with self.conexion.cursor() as cursor:
-                cursor.execute(query, params)
-                row = cursor.fetchone()
-                self.conexion.commit()
-                
-                inscripcion.id = row['id']
-                inscripcion.fecha_inscripcion = row['fecha_inscripcion']
-                return inscripcion
-                
-        except psycopg2.errors.UniqueViolation:
-            self.conexion.rollback()
-            raise InscripcionDuplicadaException(
-                f"El alumno {inscripcion.alumno_id} ya está inscripto en el curso {inscripcion.curso_id}"
-            )
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            self.conexion.commit()
+            
+            inscripcion.id = row[0]
+            inscripcion.fecha_inscripcion = row[1]
+            return inscripcion
+            
         except Exception as e:
             self.conexion.rollback()
+            if 'unique' in str(e).lower() or 'duplicate' in str(e).lower():
+                raise InscripcionDuplicadaException(f"El alumno ya está inscripto en este curso")
             raise e
+        finally:
+            cursor.close()
 
     def obtener_por_id(self, id: int) -> Optional[Inscripcion]:
-        """Obtiene una inscripción por ID"""
-        query = "SELECT * FROM inscripcion WHERE id = %s"
+        query = "SELECT id, alumno_id, curso_id, fecha_inscripcion FROM inscripcion WHERE id = %s"
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (id,))
             row = cursor.fetchone()
             return self._row_to_inscripcion(row) if row else None
+        finally:
+            cursor.close()
 
     def obtener_por_alumno(self, alumno_id: int) -> List[Inscripcion]:
-        """Obtiene todas las inscripciones de un alumno"""
-        query = "SELECT * FROM inscripcion WHERE alumno_id = %s ORDER BY fecha_inscripcion DESC"
+        query = "SELECT id, alumno_id, curso_id, fecha_inscripcion FROM inscripcion WHERE alumno_id = %s"
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (alumno_id,))
             rows = cursor.fetchall()
             return [self._row_to_inscripcion(row) for row in rows]
+        finally:
+            cursor.close()
 
     def obtener_por_curso(self, curso_id: int) -> List[Inscripcion]:
-        """Obtiene todas las inscripciones de un curso"""
-        query = "SELECT * FROM inscripcion WHERE curso_id = %s ORDER BY fecha_inscripcion DESC"
+        query = "SELECT id, alumno_id, curso_id, fecha_inscripcion FROM inscripcion WHERE curso_id = %s"
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (curso_id,))
             rows = cursor.fetchall()
             return [self._row_to_inscripcion(row) for row in rows]
+        finally:
+            cursor.close()
 
     def existe(self, alumno_id: int, curso_id: int) -> bool:
-        """Verifica si existe una inscripción"""
         query = "SELECT 1 FROM inscripcion WHERE alumno_id = %s AND curso_id = %s"
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (alumno_id, curso_id))
             return cursor.fetchone() is not None
+        finally:
+            cursor.close()
 
     def eliminar(self, id: int) -> bool:
-        """Elimina una inscripción por ID"""
         query = "DELETE FROM inscripcion WHERE id = %s"
         
+        cursor = self.conexion.cursor()
         try:
-            with self.conexion.cursor() as cursor:
-                cursor.execute(query, (id,))
-                deleted = cursor.rowcount > 0
-                self.conexion.commit()
-                return deleted
+            cursor.execute(query, (id,))
+            deleted = cursor.rowcount > 0
+            self.conexion.commit()
+            return deleted
         except Exception as e:
             self.conexion.rollback()
             raise e
+        finally:
+            cursor.close()
 
     def _row_to_inscripcion(self, row) -> Inscripcion:
-        """Convierte una fila de BD a una entidad Inscripcion"""
-        # Postgres returns date/datetime objects directly
         return Inscripcion(
-            id=row['id'],
-            alumno_id=row['alumno_id'],
-            curso_id=row['curso_id'],
-            fecha_inscripcion=row['fecha_inscripcion']
+            id=row[0],
+            alumno_id=row[1],
+            curso_id=row[2],
+            fecha_inscripcion=row[3]
         )

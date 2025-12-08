@@ -225,19 +225,27 @@ def debug_connection():
     import sys
     results = {}
     try:
-        import psycopg2
-        results["psycopg2_version"] = psycopg2.__version__
+        import pg8000
+        results["pg8000_version"] = pg8000.__version__
         
         db_url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
         results["has_db_url"] = bool(db_url)
         if db_url:
-            masked = db_url.split("@")[-1] if "@" in db_url else "HIDDEN"
-            results["db_url_masked"] = masked
+            from urllib.parse import urlparse
+            parsed = urlparse(db_url)
+            results["db_host"] = parsed.hostname
+            results["db_port"] = parsed.port
+            results["db_name"] = parsed.path.lstrip('/')
             
         from src.infrastructure.database.connection import get_db_connection
         conn = get_db_connection()
-        if conn and conn.closed == 0:
+        if conn:
              results["connection_status"] = "OK"
+             # Test query
+             cursor = conn.cursor()
+             cursor.execute("SELECT 1")
+             cursor.close()
+             results["query_test"] = "OK"
         else:
              results["connection_status"] = "Failed"
              

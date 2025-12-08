@@ -1,9 +1,8 @@
 """
 Implementación PostgreSQL: RegistroParticipacionRepository
-Sistema de Seguimiento de Alumnos
+Compatible con pg8000.
 """
 
-import psycopg2
 from typing import List
 from datetime import datetime
 
@@ -12,19 +11,15 @@ from src.domain.entities.registro_participacion import RegistroParticipacion
 
 
 class RegistroParticipacionRepositoryPostgres(RegistroParticipacionRepositoryBase):
-    """
-    Implementación PostgreSQL del repositorio de Participación.
-    """
     
     def __init__(self, conexion):
         self.conexion = conexion
 
     def crear(self, registro: RegistroParticipacion) -> RegistroParticipacion:
-        """Crea un nuevo registro de participación"""
         query = """
             INSERT INTO registro_participacion (alumno_id, clase_id, nivel, comentario, fecha_registro)
             VALUES (%s, %s, %s, %s, %s)
-            RETURNING id, fecha_registro;
+            RETURNING id, fecha_registro
         """
         params = (
             registro.alumno_id,
@@ -34,49 +29,54 @@ class RegistroParticipacionRepositoryPostgres(RegistroParticipacionRepositoryBas
             datetime.now()
         )
         
+        cursor = self.conexion.cursor()
         try:
-            with self.conexion.cursor() as cursor:
-                cursor.execute(query, params)
-                row = cursor.fetchone()
-                self.conexion.commit()
-                
-                registro.id = row['id']
-                registro.fecha_registro = row['fecha_registro']
-                return registro
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            self.conexion.commit()
+            
+            registro.id = row[0]
+            registro.fecha_registro = row[1]
+            return registro
         except Exception as e:
             self.conexion.rollback()
             raise e
+        finally:
+            cursor.close()
 
     def obtener_por_clase(self, clase_id: int) -> List[RegistroParticipacion]:
-        """Obtiene participaciones de una clase"""
-        query = "SELECT * FROM registro_participacion WHERE clase_id = %s"
+        query = "SELECT id, alumno_id, clase_id, nivel, comentario, fecha_registro FROM registro_participacion WHERE clase_id = %s"
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (clase_id,))
             rows = cursor.fetchall()
             return [self._row_to_participacion(row) for row in rows]
+        finally:
+            cursor.close()
 
     def obtener_por_alumno_y_curso(self, alumno_id: int, curso_id: int) -> List[RegistroParticipacion]:
-        """Obtiene participaciones de un alumno en un curso"""
         query = """
-            SELECT rp.* 
+            SELECT rp.id, rp.alumno_id, rp.clase_id, rp.nivel, rp.comentario, rp.fecha_registro
             FROM registro_participacion rp
             JOIN clase c ON rp.clase_id = c.id
             WHERE rp.alumno_id = %s AND c.curso_id = %s
-            ORDER BY c.fecha ASC
         """
         
-        with self.conexion.cursor() as cursor:
+        cursor = self.conexion.cursor()
+        try:
             cursor.execute(query, (alumno_id, curso_id))
             rows = cursor.fetchall()
             return [self._row_to_participacion(row) for row in rows]
+        finally:
+            cursor.close()
 
     def _row_to_participacion(self, row) -> RegistroParticipacion:
         return RegistroParticipacion(
-            id=row['id'],
-            alumno_id=row['alumno_id'],
-            clase_id=row['clase_id'],
-            nivel=row['nivel'],
-            comentario=row['comentario'],
-            fecha_registro=row['fecha_registro'] if row.get('fecha_registro') else None
+            id=row[0],
+            alumno_id=row[1],
+            clase_id=row[2],
+            nivel=row[3],
+            comentario=row[4],
+            fecha_registro=row[5] if len(row) > 5 else None
         )
