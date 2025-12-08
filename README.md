@@ -104,22 +104,20 @@ Sistema web para el seguimiento académico de estudiantes, diseñado para facili
 
 ```
 seguimiento-alumnos/
-├── api/                    # Backend Python
-│   ├── index.py           # API principal
-│   └── db.py              # Conexión a PostgreSQL
-├── public/                # Frontend
+├── api/                    # Entry points Vercel
+│   └── index.py           # Adaptador Vercel -> FastAPI
+├── public/                # Frontend SPA
 │   ├── index.html         # HTML principal
 │   ├── app.js             # Lógica JavaScript
 │   └── styles.css         # Estilos CSS
 ├── docs/                  # Documentación
-│   ├── GUIA_USO_COMPLETA.md
-│   ├── CREAR_BD_WEB.md
+│   ├── ARQUITECTURA.md    # Arquitectura detallada
 │   └── ...
-├── scripts/               # Scripts de utilidad
-│   └── migrate_to_postgres.py
-├── src/                   # Código fuente (dominio)
-│   ├── domain/
-│   └── infrastructure/
+├── src/                   # Código Fuente Modular
+│   ├── domain/            # Entidades y Reglas de Negocio
+│   ├── application/       # casos de Uso y Servicios
+│   ├── infrastructure/    # Implementación (DB, Repositorios)
+│   └── presentation/      # API Routers y Schemas
 ├── vercel.json            # Configuración de Vercel
 ├── requirements.txt       # Dependencias Python
 └── README.md              # Este archivo

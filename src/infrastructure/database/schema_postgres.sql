@@ -185,11 +185,18 @@ CREATE TABLE IF NOT EXISTS entrega_tp (
     fecha_entrega_real DATE,
     entregado BOOLEAN NOT NULL DEFAULT FALSE,
     es_tardia BOOLEAN NOT NULL DEFAULT FALSE,
+    estado TEXT DEFAULT 'pendiente',  -- pendiente, entregado, tarde, no_entregado
+    nota REAL,                        -- Nota del TP (1-10)
+    observaciones TEXT,               -- Comentarios del docente
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Foreign Keys
     FOREIGN KEY (trabajo_practico_id) REFERENCES trabajo_practico(id) ON DELETE CASCADE,
     FOREIGN KEY (alumno_id) REFERENCES alumno(id) ON DELETE CASCADE,
+    
+    -- Constraints
+    CHECK (nota IS NULL OR (nota >= 1 AND nota <= 10)),
+    CHECK (estado IN ('pendiente', 'entregado', 'tarde', 'no_entregado')),
     
     -- Constraint: Solo una entrega por alumno por TP
     UNIQUE(trabajo_practico_id, alumno_id)

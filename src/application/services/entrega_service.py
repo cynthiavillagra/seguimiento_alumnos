@@ -26,7 +26,16 @@ class EntregaTPService:
         self.tp_repo = tp_repo
         self.inscripcion_repo = inscripcion_repo
     
-    def registrar_entrega(self, tp_id: int, alumno_id: int, fecha_entrega_real: Optional[date] = None, entregado: bool = True) -> EntregaTP:
+    def registrar_entrega(
+        self, 
+        tp_id: int, 
+        alumno_id: int, 
+        fecha_entrega_real: Optional[date] = None, 
+        entregado: bool = True,
+        estado: str = 'pendiente',
+        nota: Optional[float] = None,
+        observaciones: Optional[str] = None
+    ) -> EntregaTP:
         # Obtener TP
         tp = self.tp_repo.obtener_por_id(tp_id)
         if not tp:
@@ -57,7 +66,10 @@ class EntregaTPService:
             alumno_id=alumno_id,
             fecha_entrega_real=fecha_entrega_real,
             entregado=entregado,
-            es_tardia=es_tardia
+            es_tardia=es_tardia,
+            estado=estado,
+            nota=nota,
+            observaciones=observaciones
         )
         
         return self.entrega_repo.crear_o_actualizar(entrega)

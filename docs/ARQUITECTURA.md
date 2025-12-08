@@ -23,8 +23,12 @@ Documentación técnica de la arquitectura del Sistema de Seguimiento de Alumnos
                     ↓
 ┌─────────────────────────────────────────┐
 │        BACKEND (Python 3.12)            │
-│  - api/index.py (API REST)              │
-│  - api/db.py (conexión BD)              │
+│  - Framework: FastAPI                   │
+│  - Arquitectura: Capas (Clean Arch)     │
+│  - src/domain (Entidades)               │
+│  - src/application (Casos de Uso)       │
+│  - src/infrastructure (Repositorios)    │
+│  - src/presentation (Routers/API)       │
 └─────────────────────────────────────────┘
                     ↓ SQL
 ┌─────────────────────────────────────────┐
@@ -34,6 +38,33 @@ Documentación técnica de la arquitectura del Sistema de Seguimiento de Alumnos
 │  - 2 vistas de resumen                  │
 └─────────────────────────────────────────┘
 ```
+
+## 🏗️ Patrones de Diseño
+
+El sistema utiliza una **Arquitectura en Capas (Layered Architecture)** siguiendo los principios de Clean Architecture para asegurar modularidad, testabilidad y separación de responsabilidades.
+
+### 1. Capa de Dominio (`src/domain`)
+- Contiene las **Entidades** (e.g., `Alumno`, `EntregaTP`) definidas como Dataclasses.
+- Define las **Interfaces de Repositorio** (abstracciones) para invertir dependencias (`EntregaTPRepositoryBase`).
+- Contiene **Excepciones de Dominio** (`domain_exceptions.py`).
+- No tiene dependencias externas (fuera de librerías estándar).
+
+### 2. Capa de Aplicación (`src/application`)
+- Contiene los **Servicios de Aplicación** (`EntregaTPService`).
+- Implementa la lógica de negocio y orquesta los flujos de datos.
+- Utiliza las interfaces de repositorio inyectadas.
+- Desacoplada de la base de datos y framework web.
+
+### 3. Capa de Infraestructura (`src/infrastructure`)
+- Implementa los **Repositorios Concretos** (e.g., `EntregaTPRepositoryPostgres`).
+- Maneja la conexión a base de datos (PostgreSQL).
+- Convierte entre modelos de BD y Entidades de Dominio (Mappers).
+
+### 4. Capa de Presentación (`src/presentation`)
+- Contiene la **API REST** construida con FastAPI.
+- **Routers**: Endpoints organizados por recurso (`entregas.py`, `alumnos.py`).
+- **Schemas**: DTOs (Data Transfer Objects) usando Pydantic para validación de entrada/salida (`EntregaCreateSchema`).
+- Maneja la inyección de dependencias.
 
 ---
 

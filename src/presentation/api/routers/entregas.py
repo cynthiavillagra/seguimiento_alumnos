@@ -52,7 +52,10 @@ def registrar_entrega(
             tp_id=data.trabajo_practico_id,
             alumno_id=data.alumno_id,
             fecha_entrega_real=data.fecha_entrega_real,
-            entregado=data.entregado
+            entregado=data.entregado,
+            estado=data.estado,
+            nota=data.nota,
+            observaciones=data.observaciones
         )
         return EntregaResponseSchema.from_entity(entrega)
     except TrabajoPracticoNoEncontradoException as e:

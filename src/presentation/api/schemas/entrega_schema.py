@@ -12,6 +12,9 @@ class EntregaCreateSchema(BaseModel):
     alumno_id: int = Field(..., gt=0)
     fecha_entrega_real: Optional[date] = None
     entregado: bool = True
+    estado: str = 'entregado'
+    nota: Optional[float] = Field(None, ge=1, le=10)
+    observaciones: Optional[str] = None
 
 class EntregaResponseSchema(BaseModel):
     id: int
@@ -20,6 +23,9 @@ class EntregaResponseSchema(BaseModel):
     fecha_entrega_real: Optional[date]
     entregado: bool
     es_tardia: bool
+    estado: str
+    nota: Optional[float]
+    observaciones: Optional[str]
     fecha_registro: Optional[str]
 
     @classmethod
@@ -31,6 +37,9 @@ class EntregaResponseSchema(BaseModel):
             fecha_entrega_real=entrega.fecha_entrega_real,
             entregado=entrega.entregado,
             es_tardia=entrega.es_tardia,
+            estado=entrega.estado,
+            nota=entrega.nota,
+            observaciones=entrega.observaciones,
             fecha_registro=entrega.fecha_registro.isoformat() if entrega.fecha_registro else None
         )
     
