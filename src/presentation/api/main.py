@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
-from src.presentation.api.routers import alumnos
+from src.presentation.api.routers import alumnos, cursos, inscripciones, clases, asistencias, participaciones, tps, entregas
 
 
 # ============================================================================
@@ -106,6 +106,13 @@ app.add_middleware(
 # ============================================================================
 
 app.include_router(alumnos.router)
+app.include_router(cursos.router)
+app.include_router(inscripciones.router)
+app.include_router(clases.router)
+app.include_router(asistencias.router)
+app.include_router(participaciones.router)
+app.include_router(tps.router)
+app.include_router(entregas.router)
 
 
 # ============================================================================
