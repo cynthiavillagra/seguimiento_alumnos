@@ -133,3 +133,14 @@ class DatosInsuficientesException(DomainException):
     Ejemplo: Calcular indicadores de riesgo con menos de 3 clases registradas.
     """
     pass
+
+
+# ============================================================================
+# Alias para compatibilidad
+# ============================================================================
+
+# Alias corto para TrabajoPracticoNoEncontradoException
+TPNoEncontradoException = TrabajoPracticoNoEncontradoException
+
+# Alias para duplicados de inscripción 
+InscripcionDuplicadaException = AlumnoYaInscriptoException
