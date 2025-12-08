@@ -87,6 +87,48 @@ class RegistroAsistenciaRepositoryPostgres(RegistroAsistenciaRepositoryBase):
     def actualizar(self, registro: RegistroAsistencia) -> RegistroAsistencia:
         return self.crear(registro)
 
+    def obtener_por_id(self, id: int) -> Optional[RegistroAsistencia]:
+        """Obtiene un registro de asistencia por ID"""
+        query = "SELECT id, alumno_id, clase_id, estado, fecha_registro FROM registro_asistencia WHERE id = %s"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query, (id,))
+            row = cursor.fetchone()
+            self.conexion.commit()
+            return self._row_to_asistencia(row) if row else None
+        finally:
+            cursor.close()
+
+    def existe(self, alumno_id: int, clase_id: int) -> bool:
+        """Verifica si existe un registro de asistencia para alumno y clase"""
+        query = "SELECT COUNT(*) FROM registro_asistencia WHERE alumno_id = %s AND clase_id = %s"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query, (alumno_id, clase_id))
+            row = cursor.fetchone()
+            self.conexion.commit()
+            return row[0] > 0 if row else False
+        finally:
+            cursor.close()
+
+    def eliminar(self, id: int) -> bool:
+        """Elimina un registro de asistencia por ID"""
+        query = "DELETE FROM registro_asistencia WHERE id = %s"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query, (id,))
+            deleted = cursor.rowcount > 0
+            self.conexion.commit()
+            return deleted
+        except Exception as e:
+            self.conexion.rollback()
+            raise e
+        finally:
+            cursor.close()
+
     def _row_to_asistencia(self, row) -> RegistroAsistencia:
         return RegistroAsistencia(
             id=row[0],
@@ -95,3 +137,4 @@ class RegistroAsistenciaRepositoryPostgres(RegistroAsistenciaRepositoryBase):
             estado=row[3],
             fecha_registro=row[4] if len(row) > 4 else None
         )
+

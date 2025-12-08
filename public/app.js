@@ -476,7 +476,16 @@ async function verDetalleClase(claseId) {
 
         // Obtener asistencias de la clase
         const asistenciasRes = await fetch(`${API_URL}/asistencias/clase/${claseId}`);
-        const asistencias = await asistenciasRes.json();
+        let asistencias = [];
+        if (asistenciasRes.ok) {
+            asistencias = await asistenciasRes.json();
+            if (!Array.isArray(asistencias)) {
+                console.warn('Asistencias no es un array:', asistencias);
+                asistencias = [];
+            }
+        } else {
+            console.error('Error obteniendo asistencias:', asistenciasRes.status);
+        }
 
         // Guardar en state para edición
         state.claseVisualizando = { clase, asistencias };
