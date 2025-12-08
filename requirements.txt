@@ -1,5 +1,8 @@
-# Dependencias para PostgreSQL
+﻿# Dependencias para PostgreSQL
 psycopg2-binary==2.9.9
+
+# Variables de entorno
+python-dotenv==1.0.0
 
 # Dependencias para Testing (desarrollo)
 pytest==7.4.3
