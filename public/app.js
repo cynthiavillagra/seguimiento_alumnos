@@ -111,7 +111,7 @@ function loadPageData(pageName) {
 
 async function loadDashboardData() {
     try {
-        const url = `${API_URL}/clases`;
+        const url = `${API_URL}/cursos`;
         console.log('Cargando clases desde:', url);
 
         const response = await fetch(url);
@@ -119,7 +119,7 @@ async function loadDashboardData() {
 
         console.log('Clases recibidas:', data);
 
-        state.clases = data.clases || [];
+        state.clases = data.cursos || [];
         renderClasesCards(state.clases);
 
     } catch (error) {
@@ -128,7 +128,39 @@ async function loadDashboardData() {
     }
 }
 
+function populateCourseSelects(cursos) {
+    const materiaSelect = document.getElementById('select-materia');
+    const cohorteSelect = document.getElementById('select-cohorte');
+
+    if (!materiaSelect) return;
+
+    // Guardar opción default
+    const defaultOption = materiaSelect.firstElementChild;
+    materiaSelect.innerHTML = '';
+    materiaSelect.appendChild(defaultOption);
+
+    // Poblar con cursos
+    cursos.forEach(curso => {
+        const option = document.createElement('option');
+        option.value = curso.id;
+        option.textContent = `${curso.nombre_materia} - ${curso.anio}`;
+        materiaSelect.appendChild(option);
+    });
+
+    // Deshabilitar selector de cohorte ya que está integrado en la materia
+    if (cohorteSelect) {
+        cohorteSelect.style.display = 'none';
+        // También ocultar el label si es posible, o el padre
+        if (cohorteSelect.parentElement) {
+            cohorteSelect.parentElement.style.display = 'none';
+        }
+    }
+}
+
 function renderClasesCards(clases) {
+    // Llamar a poblar selectores aquí también o desde loadDashboardData
+    populateCourseSelects(clases);
+
     const container = document.getElementById('clases-grid');
 
     if (!clases || clases.length === 0) {
@@ -144,29 +176,29 @@ function renderClasesCards(clases) {
     container.innerHTML = clases.map(clase => `
         <div class="clase-card" onclick="verClaseDetalle(${clase.id})">
             <div class="clase-card-header">
-                <div class="clase-card-materia">${clase.materia}</div>
-                <div class="clase-card-cohorte">Cohorte ${clase.cohorte}</div>
+                <div class="clase-card-materia">${clase.nombre_materia || clase.materia}</div>
+                <div class="clase-card-cohorte">Cohorte ${clase.anio || clase.cohorte} - ${clase.cuatrimestre || ''}°C</div>
             </div>
             <div class="clase-card-stats">
                 <div class="clase-stat">
                     <span class="clase-stat-icon">👥</span>
                     <span class="clase-stat-label">Alumnos</span>
-                    <span class="clase-stat-value">${clase.totalAlumnos}</span>
+                    <span class="clase-stat-value">${clase.totalAlumnos || 0}</span>
                 </div>
                 <div class="clase-stat">
                     <span class="clase-stat-icon">📊</span>
                     <span class="clase-stat-label">Asistencia</span>
-                    <span class="clase-stat-value ${clase.asistenciaPromedio >= 80 ? 'success' : clase.asistenciaPromedio >= 70 ? 'warning' : 'danger'}">${clase.asistenciaPromedio}%</span>
+                    <span class="clase-stat-value ${(clase.asistenciaPromedio || 0) >= 80 ? 'success' : (clase.asistenciaPromedio || 0) >= 70 ? 'warning' : 'danger'}">${clase.asistenciaPromedio || 0}%</span>
                 </div>
                 <div class="clase-stat">
                     <span class="clase-stat-icon">🚨</span>
                     <span class="clase-stat-label">En riesgo</span>
-                    <span class="clase-stat-value ${clase.alumnosEnRiesgo > 0 ? 'danger' : 'success'}">${clase.alumnosEnRiesgo}</span>
+                    <span class="clase-stat-value ${(clase.alumnosEnRiesgo || 0) > 0 ? 'danger' : 'success'}">${clase.alumnosEnRiesgo || 0}</span>
                 </div>
                 <div class="clase-stat">
                     <span class="clase-stat-icon">📚</span>
                     <span class="clase-stat-label">Clases</span>
-                    <span class="clase-stat-value">${clase.totalClases}</span>
+                    <span class="clase-stat-value">${clase.totalClases || 0}</span>
                 </div>
             </div>
             <div class="clase-card-actions" onclick="event.stopPropagation()">
@@ -193,14 +225,14 @@ function verClaseDetalle(claseId) {
     state.claseSeleccionada = clase;
 
     // Actualizar título
-    document.getElementById('clase-detalle-titulo').textContent = `${clase.materia} - Cohorte ${clase.cohorte}`;
-    document.getElementById('clase-detalle-subtitulo').textContent = `Última clase: ${clase.ultimaClase}`;
+    document.getElementById('clase-detalle-titulo').textContent = `${clase.nombre_materia || clase.materia} - Cohorte ${clase.anio || clase.cohorte}`;
+    document.getElementById('clase-detalle-subtitulo').textContent = `Última clase: ${clase.ultimaClase || 'N/A'}`;
 
     // Actualizar stats
-    document.getElementById('clase-total-alumnos').textContent = clase.totalAlumnos;
-    document.getElementById('clase-asistencia').textContent = `${clase.asistenciaPromedio}%`;
-    document.getElementById('clase-en-riesgo').textContent = clase.alumnosEnRiesgo;
-    document.getElementById('clase-total-clases').textContent = clase.totalClases;
+    document.getElementById('clase-total-alumnos').textContent = clase.totalAlumnos || 0;
+    document.getElementById('clase-asistencia').textContent = `${clase.asistenciaPromedio || 0}%`;
+    document.getElementById('clase-en-riesgo').textContent = clase.alumnosEnRiesgo || 0;
+    document.getElementById('clase-total-clases').textContent = clase.totalClases || 0;
 
     // Mostrar página
     showPage('clase-detalle');
@@ -221,10 +253,17 @@ function registrarClaseDirecta(claseId) {
     showPage('registro-clase');
 
     // Pre-llenar formulario
-    document.getElementById('select-materia').value = clase.materia.toLowerCase().replace(' ', '');
-    document.getElementById('select-cohorte').value = clase.cohorte.toString();
+    const materiaSelect = document.getElementById('select-materia');
+    const materiaVal = (clase.nombre_materia || clase.materia || '').toLowerCase().replace(/ /g, '');
 
-    showToast(`Registrando clase de ${clase.materia}`, 'info');
+    // Intentar seleccionar si existe la opcion, sino dejar vacio
+    if (materiaSelect.querySelector(`option[value="${materiaVal}"]`)) {
+        materiaSelect.value = materiaVal;
+    }
+
+    document.getElementById('select-cohorte').value = (clase.anio || clase.cohorte || '').toString();
+
+    showToast(`Registrando clase de ${clase.nombre_materia || clase.materia}`, 'info');
 }
 
 function verAlumnosClase() {
@@ -265,20 +304,27 @@ function animateNumber(element, start, end, duration) {
 // ============================================================================
 
 async function iniciarRegistroClase() {
-    const materia = document.getElementById('select-materia').value;
-    const cohorte = document.getElementById('select-cohorte').value;
+    const cursoId = document.getElementById('select-materia').value;
     const fecha = document.getElementById('fecha-clase').value;
 
-    if (!materia || !cohorte || !fecha) {
+    if (!cursoId || !fecha) {
         showToast('Por favor completa todos los campos', 'error');
+        return;
+    }
+
+    // Buscar curso seleccionado
+    const curso = state.clases.find(c => c.id == cursoId);
+    if (!curso) {
+        showToast('Curso no encontrado', 'error');
         return;
     }
 
     // Guardar datos de la clase
     state.claseActual = {
-        materia,
-        cohorte,
-        fecha,
+        cursoId: cursoId,
+        materia: curso.nombre_materia,
+        cohorte: curso.anio,
+        fecha: fecha,
         registros: {}
     };
 
@@ -287,8 +333,7 @@ async function iniciarRegistroClase() {
     document.getElementById('registro-asistencia').style.display = 'block';
 
     // Actualizar título
-    const materiaTexto = document.querySelector(`#select-materia option[value="${materia}"]`).textContent;
-    document.getElementById('clase-titulo').textContent = `${materiaTexto} - Cohorte ${cohorte}`;
+    document.getElementById('clase-titulo').textContent = `${curso.nombre_materia} - Cohorte ${curso.anio}`;
 
     // Formatear fecha
     const fechaObj = new Date(fecha + 'T00:00:00');
@@ -299,13 +344,16 @@ async function iniciarRegistroClase() {
     });
     document.getElementById('clase-fecha').textContent = fechaFormateada;
 
-    // Cargar alumnos
-    await cargarAlumnosParaRegistro();
+    // Cargar alumnos filtrados por cohorte del curso
+    await cargarAlumnosParaRegistro(curso.anio);
 }
 
-async function cargarAlumnosParaRegistro() {
+async function cargarAlumnosParaRegistro(cohorte) {
     try {
-        const url = `${API_URL}/alumnos`;
+        let url = `${API_URL}/alumnos`;
+        if (cohorte) {
+            url += `?cohorte=${cohorte}`;
+        }
         console.log('Cargando alumnos desde:', url);
 
         const response = await fetch(url);
@@ -548,18 +596,105 @@ async function guardarClase() {
     }
 
     try {
-        // TODO: Enviar a la API
-        console.log('Guardando clase:', state.claseActual);
+        showToast('Guardando clase...', 'info');
 
-        showToast(`Clase guardada exitosamente (${registrosCompletos} registros)`, 'success');
+        // 1. Obtener número de clase (contando las existentes)
+        const cursoId = state.claseActual.cursoId;
+        const clasesResponse = await fetch(`${API_URL}/clases/curso/${cursoId}`);
+        const clasesAnteriores = await clasesResponse.json();
+        const numeroClase = (clasesAnteriores.length || 0) + 1;
+
+        // 2. Crear la Clase
+        const claseData = {
+            curso_id: parseInt(cursoId),
+            fecha: state.claseActual.fecha,
+            numero_clase: numeroClase,
+            tema: `Clase ${numeroClase}`
+        };
+
+        const createClaseResponse = await fetch(`${API_URL}/clases`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(claseData)
+        });
+
+        if (!createClaseResponse.ok) {
+            const err = await createClaseResponse.json();
+            throw new Error(err.detail || 'Error al crear la clase');
+        }
+
+        const nuevaClase = await createClaseResponse.json();
+        console.log('Clase creada:', nuevaClase);
+        const claseId = nuevaClase.id;
+
+        // 3. Registrar Asistencias
+        // Mapeo de estados frontend -> backend
+        const mapEstado = {
+            'presente': 'Presente',
+            'ausente': 'Ausente',
+            'tarde': 'Tardanza'
+        };
+
+        const registros = Object.entries(state.claseActual.registros);
+        let asistenciasGuardadas = 0;
+
+        for (const [alumnoIdStr, registro] of registros) {
+            if (!registro.asistencia) continue;
+
+            const alumnoId = parseInt(alumnoIdStr);
+            const estado = mapEstado[registro.asistencia];
+
+            const asistenciaData = {
+                alumno_id: alumnoId,
+                clase_id: claseId,
+                estado: estado
+            };
+
+            const asistenciaRes = await fetch(`${API_URL}/asistencias`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(asistenciaData)
+            });
+
+            if (asistenciaRes.ok) {
+                asistenciasGuardadas++;
+
+                // 4. Registrar Participación (si existe y es válida)
+                if (registro.participacion) {
+                    const mapNivel = {
+                        'alta': 'Alta',
+                        'media': 'Media',
+                        'baja': 'Baja',
+                        'nula': 'Nula'
+                    };
+                    const participacionData = {
+                        alumno_id: alumnoId,
+                        clase_id: claseId,
+                        nivel: mapNivel[registro.participacion],
+                        comentario: registro.observaciones || null
+                    };
+                    await fetch(`${API_URL}/participaciones`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(participacionData)
+                    });
+                }
+            } else {
+                console.error(`Error al guardar asistencia para alumno ${alumnoId}`);
+            }
+        }
+
+        showToast(`Clase guardada exitosamente (${asistenciasGuardadas} asistencias)`, 'success');
 
         // Resetear formulario
         cancelarRegistro();
+        // Recargar dashboard para ver la nueva clase (aumentará contador)
+        loadDashboardData();
         showPage('dashboard');
 
     } catch (error) {
         console.error('Error al guardar clase:', error);
-        showToast('Error al guardar la clase', 'error');
+        showToast(`Error al guardar la clase: ${error.message}`, 'error');
     }
 }
 

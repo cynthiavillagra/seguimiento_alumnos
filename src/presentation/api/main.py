@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from src.presentation.api.routers import alumnos, cursos, inscripciones, clases, asistencias, participaciones, tps, entregas
+from fastapi.staticfiles import StaticFiles
 
 
 # ============================================================================
@@ -105,14 +106,34 @@ app.add_middleware(
 # Incluir Routers
 # ============================================================================
 
-app.include_router(alumnos.router)
-app.include_router(cursos.router)
-app.include_router(inscripciones.router)
-app.include_router(clases.router)
-app.include_router(asistencias.router)
-app.include_router(participaciones.router)
-app.include_router(tps.router)
-app.include_router(entregas.router)
+
+
+# ============================================================================
+# Incluir Routers (Prefijo /api)
+# ============================================================================
+
+api_prefix = "/api"
+
+app.include_router(alumnos.router, prefix=api_prefix)
+app.include_router(cursos.router, prefix=api_prefix)
+app.include_router(inscripciones.router, prefix=api_prefix)
+app.include_router(clases.router, prefix=api_prefix)
+app.include_router(asistencias.router, prefix=api_prefix)
+app.include_router(participaciones.router, prefix=api_prefix)
+app.include_router(tps.router, prefix=api_prefix)
+app.include_router(entregas.router, prefix=api_prefix)
+
+# ============================================================================
+# Servir Archivos Estáticos (Frontend)
+# ============================================================================
+
+# En Vercel, el frontend se sirve por separado o desde la raíz
+# Si estamos en local, servimos public desde aquí para facilitar pruebas
+if not os.environ.get("VERCEL"):
+    try:
+        app.mount("/", StaticFiles(directory="public", html=True), name="public")
+    except Exception as e:
+        print(f"⚠️ No se pudo montar directorio public: {e}")
 
 
 # ============================================================================
