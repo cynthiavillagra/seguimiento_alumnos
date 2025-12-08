@@ -714,37 +714,76 @@ async function iniciarRegistroClase() {
         return;
     }
 
-    // Guardar datos de la clase
-    state.claseActual = {
-        cursoId: cursoId,
-        materia: curso.nombre_materia,
-        cohorte: curso.anio,
-        fecha: fecha,
-        registros: {},
-        entregasTPs: {}  // Nuevo: para guardar entregas de TPs
-    };
+    showToast('Creando clase...', 'info');
 
-    // Ocultar selección, mostrar registro
-    document.getElementById('seleccion-clase').style.display = 'none';
-    document.getElementById('registro-asistencia').style.display = 'block';
+    try {
+        // 1. Obtener número de clase (contando las existentes)
+        const clasesResponse = await fetch(`${API_URL}/clases/curso/${cursoId}`);
+        const clasesAnteriores = await clasesResponse.json();
+        const numeroClase = (clasesAnteriores.length || 0) + 1;
 
-    // Actualizar título
-    document.getElementById('clase-titulo').textContent = `${curso.nombre_materia} - Cohorte ${curso.anio}`;
+        // 2. CREAR LA CLASE EN LA BASE DE DATOS INMEDIATAMENTE
+        const claseData = {
+            curso_id: parseInt(cursoId),
+            fecha: fecha,
+            numero_clase: numeroClase,
+            tema: `Clase ${numeroClase}`
+        };
 
-    // Formatear fecha
-    const fechaObj = new Date(fecha + 'T00:00:00');
-    const fechaFormateada = fechaObj.toLocaleDateString('es-AR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-    document.getElementById('clase-fecha').textContent = fechaFormateada;
+        const createClaseResponse = await fetch(`${API_URL}/clases`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(claseData)
+        });
 
-    // Cargar alumnos filtrados por cohorte del curso
-    await cargarAlumnosParaRegistro(curso.anio);
+        if (!createClaseResponse.ok) {
+            const err = await createClaseResponse.json();
+            throw new Error(err.detail || 'Error al crear la clase');
+        }
 
-    // Cargar TPs de la materia
-    await cargarTPsParaRegistro(cursoId);
+        const nuevaClase = await createClaseResponse.json();
+        console.log('Clase creada en DB:', nuevaClase);
+
+        // Guardar datos de la clase (ahora con ID de la DB)
+        state.claseActual = {
+            id: nuevaClase.id,  // ID de la clase en la base de datos
+            cursoId: cursoId,
+            materia: curso.nombre_materia,
+            cohorte: curso.anio,
+            fecha: fecha,
+            numeroClase: numeroClase,
+            registros: {},
+            entregasTPs: {}
+        };
+
+        // Ocultar selección, mostrar registro
+        document.getElementById('seleccion-clase').style.display = 'none';
+        document.getElementById('registro-asistencia').style.display = 'block';
+
+        // Actualizar título
+        document.getElementById('clase-titulo').textContent = `${curso.nombre_materia} - Cohorte ${curso.anio} (Clase ${numeroClase})`;
+
+        // Formatear fecha
+        const fechaObj = new Date(fecha + 'T00:00:00');
+        const fechaFormateada = fechaObj.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        document.getElementById('clase-fecha').textContent = fechaFormateada;
+
+        // Cargar alumnos filtrados por cohorte del curso
+        await cargarAlumnosParaRegistro(curso.anio);
+
+        // Cargar TPs de la materia
+        await cargarTPsParaRegistro(cursoId);
+
+        showToast(`✅ Clase ${numeroClase} creada. Los cambios se guardan automáticamente.`, 'success');
+
+    } catch (error) {
+        console.error('Error al crear clase:', error);
+        showToast(`Error: ${error.message}`, 'error');
+    }
 }
 
 async function cargarAlumnosParaRegistro(cohorte) {
@@ -983,23 +1022,78 @@ function marcarEntregaTP(tpId, alumnoId, estado) {
     showToast(`TP marcado como ${estadoTexto[estado]}`, 'info');
 }
 
-function marcarAsistencia(alumnoId, estado) {
-    // Actualizar estado
-    state.claseActual.registros[alumnoId].asistencia = estado;
+async function marcarAsistencia(alumnoId, estado) {
+    if (!state.claseActual || !state.claseActual.id) {
+        showToast('Error: No hay clase activa', 'error');
+        return;
+    }
 
-    // Actualizar UI - remover clase activa de todos los botones
+    const claseId = state.claseActual.id;
+    const registro = state.claseActual.registros[alumnoId];
+
+    // Mapeo de estados frontend -> backend
+    const mapEstado = {
+        'presente': 'Presente',
+        'ausente': 'Ausente',
+        'tarde': 'Tardanza'
+    };
+
+    // Actualizar UI inmediatamente (feedback visual rápido)
     const card = event.target.closest('.alumno-registro-card');
     card.querySelectorAll('.asistencia-btn').forEach(btn => {
         btn.classList.remove('presente', 'ausente', 'tarde');
     });
-
-    // Agregar clase al botón clickeado
     event.target.classList.add(estado);
 
-    // Actualizar contadores
-    actualizarContadores();
+    try {
+        // Si ya tiene un ID de asistencia guardado, actualizar
+        if (registro.asistenciaId) {
+            // ACTUALIZAR asistencia existente
+            const response = await fetch(`${API_URL}/asistencias/${registro.asistenciaId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: mapEstado[estado] })
+            });
 
-    showToast(`Asistencia registrada: ${estado}`, 'success');
+            if (response.ok) {
+                registro.asistencia = estado;
+                showToast(`✅ ${estado.charAt(0).toUpperCase() + estado.slice(1)} (actualizado)`, 'success');
+            } else {
+                throw new Error('Error al actualizar');
+            }
+        } else {
+            // CREAR nueva asistencia
+            const asistenciaData = {
+                alumno_id: parseInt(alumnoId),
+                clase_id: claseId,
+                estado: mapEstado[estado]
+            };
+
+            const response = await fetch(`${API_URL}/asistencias`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(asistenciaData)
+            });
+
+            if (response.ok) {
+                const nuevaAsistencia = await response.json();
+                registro.asistencia = estado;
+                registro.asistenciaId = nuevaAsistencia.id;  // Guardar ID para futuras actualizaciones
+                showToast(`✅ ${estado.charAt(0).toUpperCase() + estado.slice(1)} (guardado)`, 'success');
+            } else {
+                throw new Error('Error al guardar');
+            }
+        }
+
+        // Actualizar contadores
+        actualizarContadores();
+
+    } catch (error) {
+        console.error('Error guardando asistencia:', error);
+        showToast('⚠️ Error al guardar, reintenta', 'error');
+        // Revertir UI en caso de error
+        event.target.classList.remove(estado);
+    }
 }
 
 function marcarParticipacion(alumnoId, nivel) {
@@ -1076,117 +1170,34 @@ function actualizarContadores() {
 }
 
 async function guardarClase() {
-    // Validar que al menos se haya tomado asistencia
+    // Con auto-guardado, solo verificamos y finalizamos
     const registrosCompletos = Object.values(state.claseActual.registros).filter(
-        r => r.asistencia !== null
+        r => r.asistenciaId  // Ahora verificamos que tengan ID (guardados en DB)
     ).length;
+
+    const totalAlumnos = Object.keys(state.claseActual.registros).length;
 
     if (registrosCompletos === 0) {
         showToast('Debes registrar al menos la asistencia de un alumno', 'error');
         return;
     }
 
-    try {
-        showToast('Guardando clase...', 'info');
+    // Mostrar resumen
+    const sinRegistrar = totalAlumnos - registrosCompletos;
 
-        // 1. Obtener número de clase (contando las existentes)
-        const cursoId = state.claseActual.cursoId;
-        const clasesResponse = await fetch(`${API_URL}/clases/curso/${cursoId}`);
-        const clasesAnteriores = await clasesResponse.json();
-        const numeroClase = (clasesAnteriores.length || 0) + 1;
-
-        // 2. Crear la Clase
-        const claseData = {
-            curso_id: parseInt(cursoId),
-            fecha: state.claseActual.fecha,
-            numero_clase: numeroClase,
-            tema: `Clase ${numeroClase}`
-        };
-
-        const createClaseResponse = await fetch(`${API_URL}/clases`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(claseData)
-        });
-
-        if (!createClaseResponse.ok) {
-            const err = await createClaseResponse.json();
-            throw new Error(err.detail || 'Error al crear la clase');
-        }
-
-        const nuevaClase = await createClaseResponse.json();
-        console.log('Clase creada:', nuevaClase);
-        const claseId = nuevaClase.id;
-
-        // 3. Registrar Asistencias
-        // Mapeo de estados frontend -> backend
-        const mapEstado = {
-            'presente': 'Presente',
-            'ausente': 'Ausente',
-            'tarde': 'Tardanza'
-        };
-
-        const registros = Object.entries(state.claseActual.registros);
-        let asistenciasGuardadas = 0;
-
-        for (const [alumnoIdStr, registro] of registros) {
-            if (!registro.asistencia) continue;
-
-            const alumnoId = parseInt(alumnoIdStr);
-            const estado = mapEstado[registro.asistencia];
-
-            const asistenciaData = {
-                alumno_id: alumnoId,
-                clase_id: claseId,
-                estado: estado
-            };
-
-            const asistenciaRes = await fetch(`${API_URL}/asistencias`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(asistenciaData)
-            });
-
-            if (asistenciaRes.ok) {
-                asistenciasGuardadas++;
-
-                // 4. Registrar Participación (si existe y es válida)
-                if (registro.participacion) {
-                    const mapNivel = {
-                        'alta': 'Alta',
-                        'media': 'Media',
-                        'baja': 'Baja',
-                        'nula': 'Nula'
-                    };
-                    const participacionData = {
-                        alumno_id: alumnoId,
-                        clase_id: claseId,
-                        nivel: mapNivel[registro.participacion],
-                        comentario: registro.observaciones || null
-                    };
-                    await fetch(`${API_URL}/participaciones`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(participacionData)
-                    });
-                }
-            } else {
-                console.error(`Error al guardar asistencia para alumno ${alumnoId}`);
-            }
-        }
-
-        showToast(`Clase guardada exitosamente (${asistenciasGuardadas} asistencias)`, 'success');
-
-        // Resetear formulario
-        cancelarRegistro();
-        // Recargar dashboard para ver la nueva clase (aumentará contador)
-        loadDashboardData();
-        showPage('dashboard');
-
-    } catch (error) {
-        console.error('Error al guardar clase:', error);
-        showToast(`Error al guardar la clase: ${error.message}`, 'error');
+    if (sinRegistrar > 0) {
+        const confirmar = confirm(`Hay ${sinRegistrar} alumno(s) sin asistencia registrada. ¿Deseas finalizar de todos modos?`);
+        if (!confirmar) return;
     }
+
+    showToast(`✅ Clase finalizada. ${registrosCompletos} asistencias guardadas.`, 'success');
+
+    // Resetear formulario
+    cancelarRegistro();
+
+    // Recargar dashboard para ver la nueva clase
+    loadDashboardData();
+    showPage('dashboard');
 }
 
 function cancelarRegistro() {

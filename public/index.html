@@ -213,10 +213,16 @@
         </div>
 
         <div class="registro-footer">
-            <button class="btn-secondary" onclick="cancelarRegistro()">Cancelar</button>
-            <button class="btn-primary btn-large" onclick="guardarClase()">
-                <span>💾</span> Guardar y Finalizar Clase
-            </button>
+            <div class="auto-save-indicator">
+                <span class="auto-save-icon">💾</span>
+                <span class="auto-save-text">Auto-guardado activo</span>
+            </div>
+            <div class="registro-footer-buttons">
+                <button class="btn-secondary" onclick="cancelarRegistro()">Volver al Dashboard</button>
+                <button class="btn-primary btn-large" onclick="guardarClase()">
+                    <span>✅</span> Finalizar Clase
+                </button>
+            </div>
         </div>
     </div>
 </div>
