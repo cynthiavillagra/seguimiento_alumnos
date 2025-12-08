@@ -403,6 +403,90 @@ def seed_database():
             "message": str(e),
             "traceback": traceback.format_exc()
         }
+
+
+@app.delete(
+    "/api/seed",
+    tags=["Admin"],
+    summary="Borrar datos de prueba"
+)
+def clear_seed_database():
+    """
+    Borra los datos de prueba cargados previamente.
+    Identifica los datos por DNIs y nombres conocidos.
+    """
+    from src.infrastructure.database.connection import get_db_connection
+    
+    conn = get_db_connection()
+    results = {"alumnos": 0, "cursos": 0}
+    
+    # DNIs de prueba conocidos
+    test_dnis = ['12345678', '23456789', '34567890', '45678901', '56789012', '67890123', '78901234', '89012345']
+    # Nombres de cursos de prueba
+    test_cursos = ['Programación I', 'Matemática Discreta', 'Base de Datos', 'Programación II']
+    
+    try:
+        conn.rollback()
+        
+        # Borrar alumnos de prueba (por DNI)
+        for dni in test_dnis:
+            cursor = conn.cursor()
+            try:
+                # Primero obtener el ID del alumno
+                cursor.execute("SELECT id FROM alumno WHERE dni = %s", (dni,))
+                row = cursor.fetchone()
+                if row:
+                    alumno_id = row[0]
+                    # Borrar registros relacionados
+                    cursor.execute("DELETE FROM registro_asistencia WHERE alumno_id = %s", (alumno_id,))
+                    cursor.execute("DELETE FROM registro_participacion WHERE alumno_id = %s", (alumno_id,))
+                    cursor.execute("DELETE FROM entrega_tp WHERE alumno_id = %s", (alumno_id,))
+                    cursor.execute("DELETE FROM inscripcion WHERE alumno_id = %s", (alumno_id,))
+                    cursor.execute("DELETE FROM alumno WHERE id = %s", (alumno_id,))
+                    conn.commit()
+                    results["alumnos"] += 1
+            except Exception as e:
+                conn.rollback()
+                print(f"Error borrando alumno {dni}: {e}")
+            finally:
+                cursor.close()
+        
+        # Borrar cursos de prueba (por nombre)
+        for nombre in test_cursos:
+            cursor = conn.cursor()
+            try:
+                cursor.execute("SELECT id FROM curso WHERE nombre_materia = %s", (nombre,))
+                row = cursor.fetchone()
+                if row:
+                    curso_id = row[0]
+                    # Borrar registros relacionados
+                    cursor.execute("DELETE FROM trabajo_practico WHERE curso_id = %s", (curso_id,))
+                    cursor.execute("DELETE FROM clase WHERE curso_id = %s", (curso_id,))
+                    cursor.execute("DELETE FROM inscripcion WHERE curso_id = %s", (curso_id,))
+                    cursor.execute("DELETE FROM curso WHERE id = %s", (curso_id,))
+                    conn.commit()
+                    results["cursos"] += 1
+            except Exception as e:
+                conn.rollback()
+                print(f"Error borrando curso {nombre}: {e}")
+            finally:
+                cursor.close()
+        
+        return {
+            "status": "success",
+            "message": "Datos de prueba eliminados",
+            "results": results
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 # ============================================================================
 # Manejo de Errores Global
 # ============================================================================
