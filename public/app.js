@@ -997,6 +997,9 @@ window.editarTP = editarTP;
 window.eliminarTP = eliminarTP;
 window.guardarTP = guardarTP;
 window.eliminarAlumno = eliminarAlumno;
+// Seed functions
+window.cargarDatosPrueba = cargarDatosPrueba;
+window.borrarDatosPrueba = borrarDatosPrueba;
 
 // ============================================================================
 // ADMIN PANEL
@@ -1346,3 +1349,60 @@ async function eliminarTP(id) {
     }
 }
 
+// ============================================================================
+// SEED DATA FUNCTIONS
+// ============================================================================
+
+async function cargarDatosPrueba() {
+    if (!confirm('¿Cargar datos de prueba? Esto creará cursos, alumnos y TPs de ejemplo.')) {
+        return;
+    }
+
+    showToast('Cargando datos de prueba...', 'info');
+
+    try {
+        const response = await fetch(`${API_URL}/seed`);
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            showToast(`✅ Datos cargados: ${data.results.cursos} cursos, ${data.results.alumnos} alumnos, ${data.results.tps} TPs`, 'success');
+            // Recargar datos
+            loadAdminCursos();
+            loadAdminAlumnos();
+            loadAdminTPs();
+            loadDashboardData();
+        } else {
+            showToast('Error: ' + data.message, 'error');
+        }
+    } catch (error) {
+        showToast('Error al cargar datos de prueba', 'error');
+        console.error(error);
+    }
+}
+
+async function borrarDatosPrueba() {
+    if (!confirm('¿Borrar TODOS los datos de prueba? Esta acción no se puede deshacer.')) {
+        return;
+    }
+
+    showToast('Borrando datos de prueba...', 'info');
+
+    try {
+        const response = await fetch(`${API_URL}/seed`, { method: 'DELETE' });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            showToast(`✅ Datos eliminados: ${data.results.cursos} cursos, ${data.results.alumnos} alumnos`, 'success');
+            // Recargar datos
+            loadAdminCursos();
+            loadAdminAlumnos();
+            loadAdminTPs();
+            loadDashboardData();
+        } else {
+            showToast('Error: ' + data.message, 'error');
+        }
+    } catch (error) {
+        showToast('Error al borrar datos de prueba', 'error');
+        console.error(error);
+    }
+}

@@ -1560,3 +1560,21 @@ body {
 .empty-state p {
     font-size: 1.1rem;
 }
+
+/* Seed Buttons */
+.seed-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.seed-buttons .btn-primary,
+.seed-buttons .btn-secondary {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .seed-buttons {
+        flex-direction: column;
+    }
+}
