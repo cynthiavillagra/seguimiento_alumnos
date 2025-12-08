@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Seguimiento de Alumnos</title>
-    <!-- CSS Modular -->
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -28,10 +24,6 @@
                 <a href="#registro-clase" class="nav-link" data-page="registro-clase">
                     <span class="nav-icon">‚úçÔ∏è</span>
                     Registrar Clase
-                </a>
-                <a href="#cursos" class="nav-link" data-page="cursos">
-                    <span class="nav-icon">??</span>
-                    Cursos
                 </a>
                 <a href="#alumnos" class="nav-link" data-page="alumnos">
                     <span class="nav-icon">üë•</span>
@@ -402,70 +394,6 @@
                 </div>
             </div>
         </div>
-    
-
-        <!-- P·gina de GestiÛn de Cursos -->
-        <div id="page-cursos" class="page">
-            <div class="page-header">
-                <div>
-                    <h1>?? GestiÛn de Cursos</h1>
-                    <p class="subtitle">Administra todos los cursos del sistema</p>
-                </div>
-                <button class="btn-primary" onclick="mostrarModalCrearCurso()">
-                    <span>?</span> Nuevo Curso
-                </button>
-            </div>
-
-            <!-- B˙squeda y filtros -->
-            <div class="section">
-                <div class="search-bar">
-                    <input type="text" id="buscar-curso" placeholder="?? Buscar por materia o docente..." onkeyup="filtrarCursos()">
-                    <select id="filtro-anio" onchange="filtrarCursos()">
-                        <option value="">Todos los aÒos</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                    </select>
-                    <select id="filtro-cuatrimestre" onchange="filtrarCursos()">
-                        <option value="">Todos los cuatrimestres</option>
-                        <option value="1">1er Cuatrimestre</option>
-                        <option value="2">2do Cuatrimestre</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Tabla de cursos -->
-            <div class="section">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Materia</th>
-                                <th>AÒo</th>
-                                <th>Cuatrimestre</th>
-                                <th>Docente</th>
-                                <th>Alumnos</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-cursos-body">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem;">
-                                    Cargando cursos...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="no-cursos" class="empty-state" style="display: none;">
-                    <span class="empty-icon">??</span>
-                    <h3>No hay cursos</h3>
-                    <p>Comienza creando tu primer curso</p>
-                    <button class="btn-primary" onclick="mostrarModalCrearCurso()">Crear Curso</button>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Modal: Nuevo Alumno -->
@@ -708,10 +636,7 @@
     <!-- Toast Notifications -->
     <div id="toast-container"></div>
 
-    <script type="module" src="js/app.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
-
-
-
