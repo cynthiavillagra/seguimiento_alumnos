@@ -75,14 +75,42 @@ def inicializar_base_de_datos():
     """
     Inicializa el schema de la base de datos.
     Ejecuta cada statement por separado para manejar errores de 'ya existe'.
+    Mejorado para manejar bloques $$ (fusiones/triggers).
     """
     from src.infrastructure.database.postgres_schema import POSTGRES_SCHEMA
     
     conn = get_db_connection()
     
-    # pg8000 no soporta ejecutar múltiples statements de una vez
-    # Dividir el schema en statements individuales
-    statements = POSTGRES_SCHEMA.split(';')
+    # Lógica de splitting manual para respetar $$ ... $$
+    statements = []
+    current_stmt = []
+    in_dollar_quote = False
+    
+    # Procesar carácter por carácter (ineficiente pero seguro para scripts cortos)
+    # O más simple: iterar por líneas
+    
+    raw_statements = POSTGRES_SCHEMA.splitlines()
+    buffer = []
+    
+    for line in raw_statements:
+        stripped = line.strip()
+        if not stripped or stripped.startswith('--'):
+            continue
+            
+        buffer.append(line)
+        
+        # Detección simplificada de $$
+        if '$$' in line:
+            in_dollar_quote = not in_dollar_quote
+            
+        # Si terminamos con ; y NO estamos dentro de $$, es un statement
+        if line.strip().endswith(';') and not in_dollar_quote:
+            statements.append('\n'.join(buffer))
+            buffer = []
+            
+    # Agregar último si quedó
+    if buffer:
+        statements.append('\n'.join(buffer))
     
     success_count = 0
     skip_count = 0
@@ -90,33 +118,22 @@ def inicializar_base_de_datos():
     
     for stmt in statements:
         stmt = stmt.strip()
-        # Ignorar líneas vacías y comentarios puros
-        if not stmt or stmt.startswith('--'):
-            continue
-            
-        # Limpiar comentarios inline al inicio
-        lines = stmt.split('\n')
-        clean_lines = [l for l in lines if not l.strip().startswith('--')]
-        clean_stmt = '\n'.join(clean_lines).strip()
-        
-        if not clean_stmt:
-            continue
+        if not stmt: continue
             
         cursor = conn.cursor()
         try:
-            cursor.execute(clean_stmt)
+            cursor.execute(stmt)
             conn.commit()
             success_count += 1
         except Exception as e:
-            conn.rollback()  # Importante: rollback para limpiar el estado
+            conn.rollback()
             error_str = str(e).lower()
-            # Ignorar errores de "ya existe" para ser idempotente
             if 'already exists' in error_str or 'duplicate' in error_str:
                 skip_count += 1
             else:
                 error_count += 1
-                # Solo loguear errores que no sean de existencia
                 print(f"⚠️ Error en statement: {e}")
+                # print(f"SQL Parcial: {stmt[:50]}...") 
         finally:
             cursor.close()
     

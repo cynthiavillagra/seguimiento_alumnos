@@ -136,7 +136,7 @@ function loadPageData(pageName) {
 
 async function loadDashboardData() {
     try {
-        const url = `${API_URL}/cursos`;
+        const url = `${API_URL}/cursos/`;
         console.log('Cargando cursos desde:', url);
 
         const response = await fetch(url);
@@ -559,7 +559,7 @@ async function cargarAlumnosParaEdicion(cursoId, asistenciasMap) {
         const alumnosInscriptosIds = new Set(inscripciones.map(i => i.alumno_id));
 
         // Obtener todos los alumnos
-        const alumnosRes = await fetch(`${API_URL}/alumnos`);
+        const alumnosRes = await fetch(`${API_URL}/alumnos/`);
         const alumnosData = await alumnosRes.json();
         const todosAlumnos = alumnosData.alumnos || [];
 
@@ -822,9 +822,9 @@ async function iniciarRegistroClase() {
         };
 
         console.log('Enviando datos de clase:', claseData);
-        console.log('URL:', `${API_URL}/clases`);
+        console.log('URL:', `${API_URL}/clases/`);
 
-        const createClaseResponse = await fetch(`${API_URL}/clases`, {
+        const createClaseResponse = await fetch(`${API_URL}/clases/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(claseData)
@@ -902,7 +902,7 @@ async function cargarAlumnosParaRegistro(cursoId) {
         const alumnosInscriptosIds = new Set(inscripciones.map(i => i.alumno_id));
 
         // Obtener todos los alumnos
-        const alumnosRes = await fetch(`${API_URL}/alumnos`);
+        const alumnosRes = await fetch(`${API_URL}/alumnos/`);
         if (!alumnosRes.ok) {
             throw new Error(`HTTP ${alumnosRes.status}: ${alumnosRes.statusText}`);
         }
@@ -1404,7 +1404,7 @@ async function loadAlumnos() {
     try {
         showLoading('alumnos-tbody');
 
-        const url = `${API_URL}/alumnos`;
+        const url = `${API_URL}/alumnos/`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -1466,7 +1466,7 @@ async function crearAlumno() {
     }
 
     try {
-        const url = `${API_URL}/alumnos`;
+        const url = `${API_URL}/alumnos/`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -1726,7 +1726,7 @@ async function loadAdminCursos() {
     container.innerHTML = '<p class="loading">Cargando cursos...</p>';
 
     try {
-        const response = await fetch(`${API_URL}/cursos`);
+        const response = await fetch(`${API_URL}/cursos/`);
         const data = await response.json();
         const cursos = data.cursos || [];
 
@@ -1791,7 +1791,7 @@ async function guardarCurso() {
     };
 
     try {
-        const url = id ? `${API_URL}/cursos/${id}` : `${API_URL}/cursos`;
+        const url = id ? `${API_URL}/cursos/${id}` : `${API_URL}/cursos/`;
         const method = id ? 'PUT' : 'POST';
 
         const response = await fetch(url, {
@@ -1841,7 +1841,7 @@ async function loadAdminAlumnos() {
     container.innerHTML = '<p class="loading">Cargando alumnos...</p>';
 
     try {
-        const response = await fetch(`${API_URL}/alumnos`);
+        const response = await fetch(`${API_URL}/alumnos/`);
         const data = await response.json();
         const alumnos = data.alumnos || [];
 
@@ -1940,7 +1940,7 @@ async function crearAlumno() {
     }
 
     try {
-        let url = `${API_URL}/alumnos`;
+        let url = `${API_URL}/alumnos/`;
         let method = 'POST';
 
         // Si hay un ID de edición, hacer PUT
@@ -1993,7 +1993,7 @@ async function loadAdminTPs() {
 
     try {
         // Cargar cursos para tener los nombres
-        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosRes = await fetch(`${API_URL}/cursos/`);
         const cursosData = await cursosRes.json();
         const cursos = cursosData.cursos || [];
         const cursosMap = {};
@@ -2007,7 +2007,7 @@ async function loadAdminTPs() {
         }
 
         // Cargar todos los TPs con un solo request
-        const tpsRes = await fetch(`${API_URL}/tps`);
+        const tpsRes = await fetch(`${API_URL}/tps/`);
         const tpsData = await tpsRes.json();
         // La API puede devolver un array directamente o un objeto
         const allTPs = Array.isArray(tpsData) ? tpsData : (tpsData.tps || []);
@@ -2049,7 +2049,7 @@ async function loadAdminTPs() {
 async function abrirModalTP(tp = null) {
     // Primero cargar cursos en el select
     try {
-        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosRes = await fetch(`${API_URL}/cursos/`);
         const cursosData = await cursosRes.json();
         const cursos = cursosData.cursos || [];
 
@@ -2096,7 +2096,7 @@ async function guardarTP() {
     }
 
     try {
-        const url = id ? `${API_URL}/tps/${id}` : `${API_URL}/tps`;
+        const url = id ? `${API_URL}/tps/${id}` : `${API_URL}/tps/`;
         const method = id ? 'PUT' : 'POST';
 
         const response = await fetch(url, {
@@ -2240,7 +2240,7 @@ async function gestionarInscripciones(alumnoId, alumnoNombre) {
 
     // Cargar cursos disponibles
     try {
-        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosRes = await fetch(`${API_URL}/cursos/`);
         const cursosData = await cursosRes.json();
         const cursos = cursosData.cursos || [];
 
@@ -2277,7 +2277,7 @@ async function cargarInscripcionesAlumno(alumnoId) {
         }
 
         // Obtener nombres de cursos
-        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosRes = await fetch(`${API_URL}/cursos/`);
         const cursosData = await cursosRes.json();
         const cursos = cursosData.cursos || [];
         const cursosMap = {};
