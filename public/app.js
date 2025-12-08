@@ -255,12 +255,21 @@ function verClaseDetalle(claseId) {
 
     // Actualizar stats
     document.getElementById('clase-total-alumnos').textContent = clase.totalAlumnos || 0;
-    document.getElementById('clase-asistencia').textContent = `${clase.asistenciaPromedio || 0}%`;
-    document.getElementById('clase-en-riesgo').textContent = clase.alumnosEnRiesgo || 0;
+
+    // Estos elementos pueden no existir si el HTML fue modificado
+    const asistenciaEl = document.getElementById('clase-asistencia-promedio');
+    if (asistenciaEl) asistenciaEl.textContent = `${clase.asistenciaPromedio || 0}%`;
+
+    const tpsEl = document.getElementById('clase-tps-promedio');
+    if (tpsEl) tpsEl.textContent = `${clase.tpsPromedio || 0}%`;
+
     document.getElementById('clase-total-clases').textContent = clase.totalClases || 0;
 
     // Mostrar página
     showPage('clase-detalle');
+
+    // Cargar historial de clases registradas
+    cargarHistorialClases(claseId);
 }
 
 function registrarClaseDirecta(claseId) {
@@ -322,6 +331,146 @@ function animateNumber(element, start, end, duration) {
             element.textContent = Math.floor(current);
         }
     }, 16);
+}
+
+// ============================================================================
+// Historial de Clases
+// ============================================================================
+
+async function cargarHistorialClases(cursoId) {
+    const container = document.getElementById('historial-clases-container');
+    if (!container) return;
+
+    container.innerHTML = '<p class="loading">Cargando historial...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/clases/curso/${cursoId}`);
+        const clases = await response.json();
+
+        if (!clases || clases.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No hay clases registradas aún</p>
+                    <button class="btn-primary" onclick="registrarClaseDirecta()">
+                        ✍️ Registrar Primera Clase
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        // Ordenar por fecha descendente
+        clases.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        container.innerHTML = clases.map(clase => {
+            const fecha = new Date(clase.fecha).toLocaleDateString('es-AR', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            return `
+                <div class="historial-clase-card" onclick="verDetalleClase(${clase.id})">
+                    <div class="clase-card-info">
+                        <div class="clase-card-numero">Clase ${clase.numero_clase}</div>
+                        <div class="clase-card-fecha">${fecha}</div>
+                        <div class="clase-card-tema">${clase.tema || 'Sin tema'}</div>
+                    </div>
+                    <div class="clase-card-actions">
+                        <button class="btn-sm" onclick="event.stopPropagation(); verDetalleClase(${clase.id})">
+                            👁️ Ver
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error cargando historial:', error);
+        container.innerHTML = '<p class="error">Error al cargar historial</p>';
+    }
+}
+
+async function verDetalleClase(claseId) {
+    try {
+        // Obtener datos de la clase
+        const claseRes = await fetch(`${API_URL}/clases/${claseId}`);
+        const clase = await claseRes.json();
+
+        // Obtener asistencias de la clase
+        const asistenciasRes = await fetch(`${API_URL}/asistencias/clase/${claseId}`);
+        const asistencias = await asistenciasRes.json();
+
+        // Guardar en state para edición
+        state.claseVisualizando = { clase, asistencias };
+
+        // Llenar el modal
+        document.getElementById('ver-clase-id').value = claseId;
+        document.getElementById('modal-clase-titulo').textContent = `Clase ${clase.numero_clase}`;
+
+        const fechaFormateada = new Date(clase.fecha).toLocaleDateString('es-AR', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        document.getElementById('ver-clase-fecha').textContent = fechaFormateada;
+        document.getElementById('ver-clase-tema').textContent = clase.tema || 'Sin tema especificado';
+
+        // Contar estados
+        let presentes = 0, tardes = 0, ausentes = 0;
+        asistencias.forEach(a => {
+            if (a.estado === 'Presente') presentes++;
+            else if (a.estado === 'Tardanza') tardes++;
+            else if (a.estado === 'Ausente') ausentes++;
+        });
+
+        document.getElementById('ver-presentes').textContent = presentes;
+        document.getElementById('ver-tardes').textContent = tardes;
+        document.getElementById('ver-ausentes').textContent = ausentes;
+
+        // Obtener nombres de alumnos
+        const alumnosRes = await fetch(`${API_URL}/alumnos`);
+        const alumnosData = await alumnosRes.json();
+        const alumnos = alumnosData.alumnos || [];
+        const alumnosMap = {};
+        alumnos.forEach(a => alumnosMap[a.id] = a);
+
+        // Mostrar lista de asistencias
+        const asistenciasContainer = document.getElementById('ver-clase-asistencias');
+
+        if (asistencias.length === 0) {
+            asistenciasContainer.innerHTML = '<p>No hay registros de asistencia</p>';
+        } else {
+            asistenciasContainer.innerHTML = asistencias.map(a => {
+                const alumno = alumnosMap[a.alumno_id] || { nombre_completo: `Alumno #${a.alumno_id}` };
+                const estadoClass = a.estado === 'Presente' ? 'presente' :
+                    a.estado === 'Tardanza' ? 'tarde' : 'ausente';
+                const estadoIcon = a.estado === 'Presente' ? '✅' :
+                    a.estado === 'Tardanza' ? '⏰' : '❌';
+
+                return `
+                    <div class="asistencia-item ${estadoClass}">
+                        <span class="alumno-nombre">${alumno.nombre_completo}</span>
+                        <span class="estado-badge ${estadoClass}">${estadoIcon} ${a.estado}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        openModal('modal-ver-clase');
+
+    } catch (error) {
+        console.error('Error al cargar detalle de clase:', error);
+        showToast('Error al cargar detalle de la clase', 'error');
+    }
+}
+
+function editarClaseActual() {
+    // TODO: Implementar edición de clase
+    showToast('Función de edición en desarrollo', 'info');
+    closeModal('modal-ver-clase');
 }
 
 // ============================================================================

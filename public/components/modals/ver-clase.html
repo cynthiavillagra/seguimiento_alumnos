@@ -1,0 +1,33 @@
+<!-- Modal Ver/Editar Clase -->
+<div id="modal-ver-clase" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2 id="modal-clase-titulo">Detalle de Clase</h2>
+            <button class="modal-close" onclick="closeModal('modal-ver-clase')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="ver-clase-id" />
+
+            <div class="clase-info-header">
+                <div class="clase-info">
+                    <p><strong>Fecha:</strong> <span id="ver-clase-fecha">-</span></p>
+                    <p><strong>Tema:</strong> <span id="ver-clase-tema">-</span></p>
+                </div>
+                <div class="clase-stats-modal">
+                    <span class="stat-badge green"><strong id="ver-presentes">0</strong> Presentes</span>
+                    <span class="stat-badge yellow"><strong id="ver-tardes">0</strong> Tardes</span>
+                    <span class="stat-badge red"><strong id="ver-ausentes">0</strong> Ausentes</span>
+                </div>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Registro de Asistencias:</h4>
+            <div id="ver-clase-asistencias" class="asistencias-list">
+                <p class="loading">Cargando asistencias...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-ver-clase')">Cerrar</button>
+            <button class="btn-primary" onclick="editarClaseActual()">✏️ Editar Clase</button>
+        </div>
+    </div>
+</div>

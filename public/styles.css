@@ -1766,3 +1766,150 @@ body {
     background: var(--gray-50);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
+
+/* ============================================================================
+   HISTORIAL DE CLASES
+   ============================================================================ */
+
+.historial-clases {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.historial-clase-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.historial-clase-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.clase-card-info {
+    flex: 1;
+}
+
+.clase-card-numero {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.clase-card-fecha {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+}
+
+.clase-card-tema {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+.clase-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Modal Ver Clase */
+.clase-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.clase-info p {
+    margin: 0.25rem 0;
+}
+
+.clase-stats-modal {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.stat-badge.yellow {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.asistencias-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.asistencia-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+}
+
+.asistencia-item.presente {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.asistencia-item.tarde {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.asistencia-item.ausente {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.asistencia-item .alumno-nombre {
+    font-weight: 500;
+}
+
+.estado-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.estado-badge.presente {
+    background: var(--success);
+    color: white;
+}
+
+.estado-badge.tarde {
+    background: var(--warning);
+    color: white;
+}
+
+.estado-badge.ausente {
+    background: var(--danger);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-500);
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
