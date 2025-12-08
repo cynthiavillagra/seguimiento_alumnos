@@ -19,7 +19,7 @@ class TrabajoPracticoService:
         self.tp_repo = tp_repo
         self.curso_repo = curso_repo
     
-    def crear_tp(self, curso_id: int, titulo: str, fecha_entrega: date, descripcion: Optional[str] = None) -> TrabajoPractico:
+    def crear_tp(self, curso_id: int, titulo: str, fecha_entrega: Optional[date] = None, descripcion: Optional[str] = None) -> TrabajoPractico:
         if not self.curso_repo.obtener_por_id(curso_id):
             raise CursoNoEncontradoException(f"Curso {curso_id} no encontrado")
             

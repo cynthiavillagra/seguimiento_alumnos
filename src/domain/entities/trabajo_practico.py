@@ -15,7 +15,7 @@ class TrabajoPractico:
     """
     curso_id: int
     titulo: str
-    fecha_entrega: date
+    fecha_entrega: Optional[date] = None
     descripcion: Optional[str] = None
     id: Optional[int] = None
     fecha_creacion: Optional[datetime] = None
@@ -26,7 +26,7 @@ class TrabajoPractico:
         if not self.titulo or not self.titulo.strip():
             raise ValueError("El título no puede estar vacío")
             
-        if isinstance(self.fecha_entrega, str):
+        if self.fecha_entrega and isinstance(self.fecha_entrega, str):
             self.fecha_entrega = date.fromisoformat(self.fecha_entrega)
 
     def to_dict(self) -> dict:

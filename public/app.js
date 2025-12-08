@@ -1336,10 +1336,12 @@ async function loadAdminTPs() {
     container.innerHTML = '<p class="loading">Cargando TPs...</p>';
 
     try {
-        // Primero cargar cursos para el select
+        // Cargar cursos para tener los nombres
         const cursosRes = await fetch(`${API_URL}/cursos`);
         const cursosData = await cursosRes.json();
         const cursos = cursosData.cursos || [];
+        const cursosMap = {};
+        cursos.forEach(c => cursosMap[c.id] = c);
 
         // Actualizar select de cursos en modal
         const tpCursoSelect = document.getElementById('tp-curso');
@@ -1348,18 +1350,11 @@ async function loadAdminTPs() {
                 cursos.map(c => `<option value="${c.id}">${c.nombre_materia} (${c.anio})</option>`).join('');
         }
 
-        // Cargar TPs de todos los cursos
-        let allTPs = [];
-        for (const curso of cursos) {
-            try {
-                const tpsRes = await fetch(`${API_URL}/tps/curso/${curso.id}`);
-                const tpsData = await tpsRes.json();
-                const tps = tpsData.trabajos_practicos || [];
-                allTPs = allTPs.concat(tps.map(tp => ({ ...tp, curso_nombre: curso.nombre_materia })));
-            } catch (e) {
-                // Ignorar errores individuales
-            }
-        }
+        // Cargar todos los TPs con un solo request
+        const tpsRes = await fetch(`${API_URL}/tps`);
+        const tpsData = await tpsRes.json();
+        // La API puede devolver un array directamente o un objeto
+        const allTPs = Array.isArray(tpsData) ? tpsData : (tpsData.tps || []);
 
         if (allTPs.length === 0) {
             container.innerHTML = `
@@ -1371,20 +1366,23 @@ async function loadAdminTPs() {
             return;
         }
 
-        container.innerHTML = allTPs.map(tp => `
-            <div class="admin-card">
-                <div class="admin-card-info">
-                    <div class="admin-card-title">${tp.titulo}</div>
-                    <div class="admin-card-subtitle">
-                        ${tp.curso_nombre || 'Curso #' + tp.curso_id} | Entrega: ${tp.fecha_entrega || 'Sin fecha'}
+        container.innerHTML = allTPs.map(tp => {
+            const curso = cursosMap[tp.curso_id] || {};
+            return `
+                <div class="admin-card">
+                    <div class="admin-card-info">
+                        <div class="admin-card-title">${tp.titulo}</div>
+                        <div class="admin-card-subtitle">
+                            ${curso.nombre_materia || 'Curso #' + tp.curso_id} | Entrega: ${tp.fecha_entrega || 'Sin fecha'}
+                        </div>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="btn-edit" onclick="editarTP(${tp.id})">✏️ Editar</button>
+                        <button class="btn-delete" onclick="eliminarTP(${tp.id})">🗑️ Eliminar</button>
                     </div>
                 </div>
-                <div class="admin-card-actions">
-                    <button class="btn-edit" onclick="editarTP(${tp.id})">✏️ Editar</button>
-                    <button class="btn-delete" onclick="eliminarTP(${tp.id})">🗑️ Eliminar</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (error) {
         console.error('Error cargando TPs:', error);
