@@ -1018,6 +1018,7 @@ window.abrirModalTP = abrirModalTP;
 window.editarTP = editarTP;
 window.eliminarTP = eliminarTP;
 window.guardarTP = guardarTP;
+window.crearAlumno = crearAlumno;
 window.editarAlumno = editarAlumno;
 window.eliminarAlumno = eliminarAlumno;
 // Seed functions
@@ -1239,12 +1240,12 @@ async function editarAlumno(id) {
         const response = await fetch(`${API_URL}/alumnos/${id}`);
         const alumno = await response.json();
 
-        // Llenar el modal con los datos del alumno
-        document.getElementById('nuevo-alumno-nombre').value = alumno.nombre || '';
-        document.getElementById('nuevo-alumno-apellido').value = alumno.apellido || '';
-        document.getElementById('nuevo-alumno-dni').value = alumno.dni || '';
-        document.getElementById('nuevo-alumno-email').value = alumno.email || '';
-        document.getElementById('nuevo-alumno-cohorte').value = alumno.cohorte || '';
+        // Llenar el modal con los datos del alumno (IDs correctos del HTML)
+        document.getElementById('nombre').value = alumno.nombre || '';
+        document.getElementById('apellido').value = alumno.apellido || '';
+        document.getElementById('dni').value = alumno.dni || '';
+        document.getElementById('email').value = alumno.email || '';
+        document.getElementById('cohorte').value = alumno.cohorte || '';
 
         // Guardar el ID para la actualización
         window.currentEditAlumnoId = id;
@@ -1253,9 +1254,68 @@ async function editarAlumno(id) {
         const modalTitle = document.querySelector('#modal-nuevo-alumno .modal-header h2');
         if (modalTitle) modalTitle.textContent = 'Editar Alumno';
 
+        // Cambiar texto del botón
+        const btn = document.querySelector('#modal-nuevo-alumno .modal-footer .btn-primary');
+        if (btn) btn.textContent = 'Guardar Cambios';
+
         openModal('modal-nuevo-alumno');
     } catch (error) {
         showToast('Error al cargar alumno', 'error');
+    }
+}
+
+async function crearAlumno() {
+    const data = {
+        nombre: document.getElementById('nombre').value,
+        apellido: document.getElementById('apellido').value,
+        dni: document.getElementById('dni').value,
+        email: document.getElementById('email').value,
+        cohorte: parseInt(document.getElementById('cohorte').value)
+    };
+
+    if (!data.nombre || !data.apellido || !data.dni) {
+        showToast('Completa los campos obligatorios', 'error');
+        return;
+    }
+
+    try {
+        let url = `${API_URL}/alumnos`;
+        let method = 'POST';
+
+        // Si hay un ID de edición, hacer PUT
+        if (window.currentEditAlumnoId) {
+            url = `${API_URL}/alumnos/${window.currentEditAlumnoId}`;
+            method = 'PUT';
+        }
+
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            showToast(window.currentEditAlumnoId ? 'Alumno actualizado' : 'Alumno creado', 'success');
+            closeModal('modal-nuevo-alumno');
+
+            // Limpiar formulario y estado
+            document.getElementById('form-nuevo-alumno').reset();
+            window.currentEditAlumnoId = null;
+
+            // Restaurar título y botón
+            const modalTitle = document.querySelector('#modal-nuevo-alumno .modal-header h2');
+            if (modalTitle) modalTitle.textContent = 'Nuevo Alumno';
+            const btn = document.querySelector('#modal-nuevo-alumno .modal-footer .btn-primary');
+            if (btn) btn.textContent = 'Crear Alumno';
+
+            loadAdminAlumnos();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Error al guardar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al guardar alumno', 'error');
+        console.error(error);
     }
 }
 
@@ -1323,7 +1383,22 @@ async function loadAdminTPs() {
     }
 }
 
-function abrirModalTP(tp = null) {
+async function abrirModalTP(tp = null) {
+    // Primero cargar cursos en el select
+    try {
+        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosData = await cursosRes.json();
+        const cursos = cursosData.cursos || [];
+
+        const select = document.getElementById('tp-curso');
+        if (select) {
+            select.innerHTML = '<option value="">Seleccionar curso...</option>' +
+                cursos.map(c => `<option value="${c.id}">${c.nombre_materia} (${c.anio})</option>`).join('');
+        }
+    } catch (e) {
+        console.error('Error cargando cursos para TP:', e);
+    }
+
     document.getElementById('modal-tp-titulo').textContent = tp ? 'Editar TP' : 'Nuevo TP';
     document.getElementById('tp-id').value = tp?.id || '';
     document.getElementById('tp-curso').value = tp?.curso_id || '';
