@@ -93,6 +93,19 @@ class CursoRepositoryPostgres(CursoRepositoryBase):
         finally:
             cursor.close()
 
+    def buscar_por_anio_y_cuatrimestre(self, anio: int, cuatrimestre: int) -> List[Curso]:
+        """Obtiene cursos de un cuatrimestre específico"""
+        query = "SELECT id, nombre_materia, anio, cuatrimestre, docente_responsable, fecha_creacion FROM curso WHERE anio = %s AND cuatrimestre = %s ORDER BY nombre_materia"
+        
+        cursor = self.conexion.cursor()
+        try:
+            cursor.execute(query, (anio, cuatrimestre))
+            rows = cursor.fetchall()
+            self.conexion.commit()
+            return [self._row_to_curso(row) for row in rows]
+        finally:
+            cursor.close()
+
     def actualizar(self, curso: Curso) -> Curso:
         """Actualiza un curso existente"""
         if curso.id is None:

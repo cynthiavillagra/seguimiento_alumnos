@@ -70,6 +70,7 @@ class AlumnoRepositoryPostgres(AlumnoRepositoryBase):
         try:
             cursor.execute(query, (id,))
             row = cursor.fetchone()
+            self.conexion.commit()
             return self._row_to_alumno(row) if row else None
         finally:
             cursor.close()
@@ -82,6 +83,7 @@ class AlumnoRepositoryPostgres(AlumnoRepositoryBase):
         try:
             cursor.execute(query, (dni,))
             row = cursor.fetchone()
+            self.conexion.commit()
             return self._row_to_alumno(row) if row else None
         finally:
             cursor.close()
