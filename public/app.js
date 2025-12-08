@@ -738,15 +738,26 @@ async function iniciarRegistroClase() {
             tema: `Clase ${numeroClase}`
         };
 
+        console.log('Enviando datos de clase:', claseData);
+        console.log('URL:', `${API_URL}/clases`);
+
         const createClaseResponse = await fetch(`${API_URL}/clases`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(claseData)
         });
 
+        console.log('Response status:', createClaseResponse.status);
+
         if (!createClaseResponse.ok) {
-            const err = await createClaseResponse.json();
-            throw new Error(err.detail || 'Error al crear la clase');
+            const errText = await createClaseResponse.text();
+            console.error('Error response:', errText);
+            let errMsg = 'Error al crear la clase';
+            try {
+                const errJson = JSON.parse(errText);
+                errMsg = errJson.detail || errMsg;
+            } catch { }
+            throw new Error(errMsg);
         }
 
         const nuevaClase = await createClaseResponse.json();
