@@ -100,3 +100,23 @@ def cancelar_inscripcion(
     except Exception as e:
         print(f"Error inesperado al cancelar inscripcion: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+
+@router.get(
+    "/curso/{curso_id}",
+    response_model=List[InscripcionResponseSchema],
+    summary="Listar inscripciones de un curso"
+)
+def listar_por_curso(
+    curso_id: int,
+    service: InscripcionService = Depends(get_inscripcion_service)
+):
+    """Lista todos los alumnos inscriptos en un curso específico"""
+    try:
+        inscripciones = service.listar_inscripciones_curso(curso_id)
+        return [InscripcionResponseSchema.from_entity(i) for i in inscripciones]
+    except CursoNoEncontradoException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        print(f"Error inesperado al listar inscripciones de curso: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+

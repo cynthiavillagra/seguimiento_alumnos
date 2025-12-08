@@ -529,7 +529,7 @@ async function verDetalleClase(claseId) {
         document.getElementById('clase-fecha').textContent = fechaFormateada;
 
         // Cargar alumnos y mostrarlos con sus asistencias ya marcadas
-        await cargarAlumnosParaEdicion(curso.anio, asistenciasMap);
+        await cargarAlumnosParaEdicion(clase.curso_id, asistenciasMap);
 
         // Cargar TPs de la materia
         await cargarTPsParaRegistro(clase.curso_id);
@@ -546,16 +546,25 @@ async function verDetalleClase(claseId) {
 }
 
 // Cargar alumnos para edición (con asistencias pre-marcadas)
-async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
+async function cargarAlumnosParaEdicion(cursoId, asistenciasMap) {
     try {
-        let url = `${API_URL}/alumnos`;
-        if (cohorte) {
-            url += `?cohorte=${cohorte}`;
+        // Obtener inscripciones del curso para saber qué alumnos están inscriptos
+        const inscripcionesRes = await fetch(`${API_URL}/inscripciones/curso/${cursoId}`);
+        let inscripciones = [];
+        if (inscripcionesRes.ok) {
+            inscripciones = await inscripcionesRes.json();
         }
 
-        const response = await fetch(url);
-        const data = await response.json();
-        const alumnos = data.alumnos || [];
+        // Obtener IDs de alumnos inscriptos
+        const alumnosInscriptosIds = new Set(inscripciones.map(i => i.alumno_id));
+
+        // Obtener todos los alumnos
+        const alumnosRes = await fetch(`${API_URL}/alumnos`);
+        const alumnosData = await alumnosRes.json();
+        const todosAlumnos = alumnosData.alumnos || [];
+
+        // Filtrar solo los inscriptos en este curso
+        const alumnos = todosAlumnos.filter(a => alumnosInscriptosIds.has(a.id));
 
         state.alumnos = alumnos;
 
@@ -563,7 +572,7 @@ async function cargarAlumnosParaEdicion(cohorte, asistenciasMap) {
         container.innerHTML = '';
 
         if (alumnos.length === 0) {
-            container.innerHTML = '<p>No hay alumnos en esta cohorte</p>';
+            container.innerHTML = '<p>No hay alumnos inscriptos en este curso</p>';
             return;
         }
 
@@ -865,8 +874,8 @@ async function iniciarRegistroClase() {
         });
         document.getElementById('clase-fecha').textContent = fechaFormateada;
 
-        // Cargar alumnos filtrados por cohorte del curso
-        await cargarAlumnosParaRegistro(curso.anio);
+        // Cargar alumnos inscriptos en el curso
+        await cargarAlumnosParaRegistro(cursoId);
 
         // Cargar TPs de la materia
         await cargarTPsParaRegistro(cursoId);
@@ -879,27 +888,35 @@ async function iniciarRegistroClase() {
     }
 }
 
-async function cargarAlumnosParaRegistro(cohorte) {
+async function cargarAlumnosParaRegistro(cursoId) {
     try {
-        let url = `${API_URL}/alumnos`;
-        if (cohorte) {
-            url += `?cohorte=${cohorte}`;
+        // Obtener inscripciones del curso para saber qué alumnos están inscriptos
+        const inscripcionesRes = await fetch(`${API_URL}/inscripciones/curso/${cursoId}`);
+        let inscripciones = [];
+        if (inscripcionesRes.ok) {
+            inscripciones = await inscripcionesRes.json();
         }
-        console.log('Cargando alumnos desde:', url);
+        console.log('Inscripciones del curso:', inscripciones);
 
-        const response = await fetch(url);
+        // Obtener IDs de alumnos inscriptos
+        const alumnosInscriptosIds = new Set(inscripciones.map(i => i.alumno_id));
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Obtener todos los alumnos
+        const alumnosRes = await fetch(`${API_URL}/alumnos`);
+        if (!alumnosRes.ok) {
+            throw new Error(`HTTP ${alumnosRes.status}: ${alumnosRes.statusText}`);
         }
+        const alumnosData = await alumnosRes.json();
+        const todosAlumnos = alumnosData.alumnos || [];
 
-        const data = await response.json();
-        console.log('Alumnos recibidos:', data);
-
-        const alumnos = data.alumnos || [];
+        // Filtrar solo los inscriptos en este curso
+        const alumnos = todosAlumnos.filter(a => alumnosInscriptosIds.has(a.id));
+        console.log('Alumnos inscriptos:', alumnos);
 
         if (alumnos.length === 0) {
-            showToast('No hay alumnos registrados', 'error');
+            const container = document.getElementById('lista-registro-alumnos');
+            container.innerHTML = '<p>No hay alumnos inscriptos en este curso. Ve a Admin para inscribir alumnos.</p>';
+            showToast('No hay alumnos inscriptos en este curso', 'warning');
             return;
         }
 
