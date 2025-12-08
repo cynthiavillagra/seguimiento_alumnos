@@ -487,6 +487,63 @@ def clear_seed_database():
         }
 
 
+@app.delete(
+    "/api/clear-all",
+    tags=["Admin"],
+    summary="Borrar TODOS los datos"
+)
+def clear_all_data():
+    """
+    Borra TODOS los datos de todas las tablas.
+    ¡Cuidado! Esta operación no se puede deshacer.
+    """
+    from src.infrastructure.database.connection import get_db_connection
+    
+    conn = get_db_connection()
+    results = {}
+    
+    # Orden específico para respetar constraints de FK
+    tables = [
+        'entrega_tp',
+        'registro_participacion', 
+        'registro_asistencia',
+        'inscripcion',
+        'trabajo_practico',
+        'clase',
+        'alumno',
+        'curso'
+    ]
+    
+    try:
+        conn.rollback()
+        
+        for table in tables:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(f"DELETE FROM {table}")
+                results[table] = cursor.rowcount
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                results[table] = f"error: {str(e)}"
+            finally:
+                cursor.close()
+        
+        return {
+            "status": "success",
+            "message": "Todos los datos eliminados",
+            "results": results
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 # ============================================================================
 # Manejo de Errores Global
 # ============================================================================

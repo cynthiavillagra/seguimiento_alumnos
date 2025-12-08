@@ -1000,6 +1000,7 @@ window.eliminarAlumno = eliminarAlumno;
 // Seed functions
 window.cargarDatosPrueba = cargarDatosPrueba;
 window.borrarDatosPrueba = borrarDatosPrueba;
+window.borrarTodo = borrarTodo;
 
 // ============================================================================
 // ADMIN PANEL
@@ -1403,6 +1404,37 @@ async function borrarDatosPrueba() {
         }
     } catch (error) {
         showToast('Error al borrar datos de prueba', 'error');
+        console.error(error);
+    }
+}
+
+async function borrarTodo() {
+    if (!confirm('⚠️ ¿Estás SEGURO de BORRAR TODOS los datos?\n\nEsto incluye:\n- Todos los cursos\n- Todos los alumnos\n- Todos los TPs\n- Todas las asistencias\n\n¡Esta acción NO se puede deshacer!')) {
+        return;
+    }
+
+    if (!confirm('⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Realmente quieres borrar TODO?')) {
+        return;
+    }
+
+    showToast('Borrando todos los datos...', 'info');
+
+    try {
+        const response = await fetch(`${API_URL}/clear-all`, { method: 'DELETE' });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            showToast('✅ Todos los datos han sido eliminados', 'success');
+            // Recargar datos
+            loadAdminCursos();
+            loadAdminAlumnos();
+            loadAdminTPs();
+            loadDashboardData();
+        } else {
+            showToast('Error: ' + data.message, 'error');
+        }
+    } catch (error) {
+        showToast('Error al borrar datos', 'error');
         console.error(error);
     }
 }
