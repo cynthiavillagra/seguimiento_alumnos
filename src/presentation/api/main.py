@@ -215,6 +215,39 @@ def setup_database():
             "hint": "Verifica POSTGRES_URL en variables de entorno"
         }
 
+@app.get(
+    "/debug",
+    tags=["Admin"],
+    summary="Debug Connection"
+)
+def debug_connection():
+    import os
+    import sys
+    results = {}
+    try:
+        import psycopg2
+        results["psycopg2_version"] = psycopg2.__version__
+        
+        db_url = os.environ.get("POSTGRES_URL") or os.environ.get("DATABASE_URL")
+        results["has_db_url"] = bool(db_url)
+        if db_url:
+            masked = db_url.split("@")[-1] if "@" in db_url else "HIDDEN"
+            results["db_url_masked"] = masked
+            
+        from src.infrastructure.database.connection import get_db_connection
+        conn = get_db_connection()
+        if conn and conn.closed == 0:
+             results["connection_status"] = "OK"
+        else:
+             results["connection_status"] = "Failed"
+             
+    except Exception as e:
+        results["error"] = str(e)
+        import traceback
+        results["traceback"] = traceback.format_exc()
+        
+    return results
+
 
 # ============================================================================
 # Manejo de Errores Global
