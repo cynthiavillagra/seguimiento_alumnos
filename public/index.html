@@ -34,6 +34,10 @@
                     Alertas
                     <span class="badge">3</span>
                 </a>
+                <a href="#admin" class="nav-link" data-page="admin">
+                    <span class="nav-icon">⚙️</span>
+                    Admin
+                </a>
             </div>
         </div>
     </nav>
@@ -422,6 +426,125 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeModal('modal-nuevo-alumno')">Cancelar</button>
                 <button class="btn-primary" onclick="crearAlumno()">Crear Alumno</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Curso -->
+    <div id="modal-curso" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-curso-titulo">Nuevo Curso</h2>
+                <button class="modal-close" onclick="closeModal('modal-curso')">&times;</button>
+            </div>
+            <form id="form-curso">
+                <input type="hidden" id="curso-id" />
+                <div class="form-group">
+                    <label for="curso-nombre">Nombre de la Materia *</label>
+                    <input type="text" id="curso-nombre" required />
+                </div>
+                <div class="form-group">
+                    <label for="curso-anio">Año *</label>
+                    <input type="number" id="curso-anio" min="2020" max="2030" required />
+                </div>
+                <div class="form-group">
+                    <label for="curso-cuatrimestre">Cuatrimestre *</label>
+                    <select id="curso-cuatrimestre" required>
+                        <option value="1">1° Cuatrimestre</option>
+                        <option value="2">2° Cuatrimestre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="curso-docente">Docente Responsable *</label>
+                    <input type="text" id="curso-docente" required />
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-curso')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarCurso()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal TP -->
+    <div id="modal-tp" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-tp-titulo">Nuevo TP</h2>
+                <button class="modal-close" onclick="closeModal('modal-tp')">&times;</button>
+            </div>
+            <form id="form-tp">
+                <input type="hidden" id="tp-id" />
+                <div class="form-group">
+                    <label for="tp-curso">Curso *</label>
+                    <select id="tp-curso" required>
+                        <option value="">Seleccionar curso...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tp-titulo">Título *</label>
+                    <input type="text" id="tp-titulo" required />
+                </div>
+                <div class="form-group">
+                    <label for="tp-descripcion">Descripción</label>
+                    <textarea id="tp-descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tp-fecha">Fecha de Entrega *</label>
+                    <input type="date" id="tp-fecha" required />
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-tp')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarTP()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="page-admin" class="page">
+        <div class="page-header">
+            <h1>⚙️ Administración</h1>
+            <p class="subtitle">Gestiona cursos, alumnos y trabajos prácticos</p>
+        </div>
+
+        <!-- Tabs de Admin -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="showAdminTab('cursos')">📚 Cursos</button>
+            <button class="admin-tab" onclick="showAdminTab('alumnos-admin')">👥 Alumnos</button>
+            <button class="admin-tab" onclick="showAdminTab('tps')">📝 TPs</button>
+        </div>
+
+        <!-- Tab Cursos -->
+        <div id="admin-tab-cursos" class="admin-tab-content active">
+            <div class="admin-header">
+                <h3>Gestión de Cursos</h3>
+                <button class="btn-primary" onclick="abrirModalCurso()">+ Nuevo Curso</button>
+            </div>
+            <div id="admin-cursos-list" class="admin-list">
+                <p class="loading">Cargando cursos...</p>
+            </div>
+        </div>
+
+        <!-- Tab Alumnos -->
+        <div id="admin-tab-alumnos-admin" class="admin-tab-content">
+            <div class="admin-header">
+                <h3>Gestión de Alumnos</h3>
+                <button class="btn-primary" onclick="openModal('modal-nuevo-alumno')">+ Nuevo Alumno</button>
+            </div>
+            <div id="admin-alumnos-list" class="admin-list">
+                <p class="loading">Cargando alumnos...</p>
+            </div>
+        </div>
+
+        <!-- Tab TPs -->
+        <div id="admin-tab-tps" class="admin-tab-content">
+            <div class="admin-header">
+                <h3>Gestión de Trabajos Prácticos</h3>
+                <button class="btn-primary" onclick="abrirModalTP()">+ Nuevo TP</button>
+            </div>
+            <div id="admin-tps-list" class="admin-list">
+                <p class="loading">Cargando TPs...</p>
             </div>
         </div>
     </div>

@@ -102,6 +102,9 @@ function loadPageData(pageName) {
         case 'alertas':
             // Cargar alertas
             break;
+        case 'admin':
+            loadAdminData();
+            break;
     }
 }
 
@@ -983,3 +986,363 @@ window.verAlertasClase = verAlertasClase;
 window.marcarTPEntregado = marcarTPEntregado;
 window.guardarNotaTP = guardarNotaTP;
 window.marcarActitud = marcarActitud;
+// Admin functions
+window.showAdminTab = showAdminTab;
+window.abrirModalCurso = abrirModalCurso;
+window.editarCurso = editarCurso;
+window.eliminarCurso = eliminarCurso;
+window.guardarCurso = guardarCurso;
+window.abrirModalTP = abrirModalTP;
+window.editarTP = editarTP;
+window.eliminarTP = eliminarTP;
+window.guardarTP = guardarTP;
+window.eliminarAlumno = eliminarAlumno;
+
+// ============================================================================
+// ADMIN PANEL
+// ============================================================================
+
+function showAdminTab(tabName) {
+    // Ocultar todos los tabs
+    document.querySelectorAll('.admin-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Mostrar tab seleccionado
+    const targetTab = document.getElementById(`admin-tab-${tabName}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+
+    // Activar botón
+    event.target.classList.add('active');
+
+    // Cargar datos del tab
+    if (tabName === 'cursos') loadAdminCursos();
+    if (tabName === 'alumnos-admin') loadAdminAlumnos();
+    if (tabName === 'tps') loadAdminTPs();
+}
+
+async function loadAdminData() {
+    loadAdminCursos();
+}
+
+// --- CURSOS ---
+async function loadAdminCursos() {
+    const container = document.getElementById('admin-cursos-list');
+    if (!container) return;
+
+    container.innerHTML = '<p class="loading">Cargando cursos...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/cursos`);
+        const data = await response.json();
+        const cursos = data.cursos || [];
+
+        if (cursos.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📚</div>
+                    <p>No hay cursos registrados</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = cursos.map(curso => `
+            <div class="admin-card">
+                <div class="admin-card-info">
+                    <div class="admin-card-title">${curso.nombre_materia}</div>
+                    <div class="admin-card-subtitle">
+                        ${curso.anio} - ${curso.cuatrimestre}° Cuatrimestre | ${curso.docente_responsable || 'Sin docente'}
+                    </div>
+                </div>
+                <div class="admin-card-actions">
+                    <button class="btn-edit" onclick="editarCurso(${curso.id})">✏️ Editar</button>
+                    <button class="btn-delete" onclick="eliminarCurso(${curso.id})">🗑️ Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando cursos:', error);
+        container.innerHTML = '<p class="loading">Error al cargar cursos</p>';
+    }
+}
+
+function abrirModalCurso(curso = null) {
+    document.getElementById('modal-curso-titulo').textContent = curso ? 'Editar Curso' : 'Nuevo Curso';
+    document.getElementById('curso-id').value = curso?.id || '';
+    document.getElementById('curso-nombre').value = curso?.nombre_materia || '';
+    document.getElementById('curso-anio').value = curso?.anio || new Date().getFullYear();
+    document.getElementById('curso-cuatrimestre').value = curso?.cuatrimestre || 1;
+    document.getElementById('curso-docente').value = curso?.docente_responsable || '';
+    openModal('modal-curso');
+}
+
+async function editarCurso(id) {
+    try {
+        const response = await fetch(`${API_URL}/cursos/${id}`);
+        const curso = await response.json();
+        abrirModalCurso(curso);
+    } catch (error) {
+        showToast('Error al cargar curso', 'error');
+    }
+}
+
+async function guardarCurso() {
+    const id = document.getElementById('curso-id').value;
+    const data = {
+        nombre_materia: document.getElementById('curso-nombre').value,
+        anio: parseInt(document.getElementById('curso-anio').value),
+        cuatrimestre: parseInt(document.getElementById('curso-cuatrimestre').value),
+        docente_responsable: document.getElementById('curso-docente').value
+    };
+
+    try {
+        const url = id ? `${API_URL}/cursos/${id}` : `${API_URL}/cursos`;
+        const method = id ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            showToast(id ? 'Curso actualizado' : 'Curso creado', 'success');
+            closeModal('modal-curso');
+            loadAdminCursos();
+            loadDashboardData();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Error al guardar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al guardar curso', 'error');
+    }
+}
+
+async function eliminarCurso(id) {
+    if (!confirm('¿Estás seguro de eliminar este curso? Esto eliminará también las clases y registros asociados.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/cursos/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            showToast('Curso eliminado', 'success');
+            loadAdminCursos();
+            loadDashboardData();
+        } else {
+            showToast('Error al eliminar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al eliminar curso', 'error');
+    }
+}
+
+// --- ALUMNOS (Admin) ---
+async function loadAdminAlumnos() {
+    const container = document.getElementById('admin-alumnos-list');
+    if (!container) return;
+
+    container.innerHTML = '<p class="loading">Cargando alumnos...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/alumnos`);
+        const data = await response.json();
+        const alumnos = data.alumnos || [];
+
+        if (alumnos.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p>No hay alumnos registrados</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = alumnos.map(alumno => `
+            <div class="admin-card">
+                <div class="admin-card-info">
+                    <div class="admin-card-title">${alumno.apellido}, ${alumno.nombre}</div>
+                    <div class="admin-card-subtitle">
+                        DNI: ${alumno.dni} | Email: ${alumno.email || '-'} | Cohorte: ${alumno.cohorte || '-'}
+                    </div>
+                </div>
+                <div class="admin-card-actions">
+                    <button class="btn-edit" onclick="verFichaAlumno(${alumno.id})">📋 Ver Ficha</button>
+                    <button class="btn-delete" onclick="eliminarAlumno(${alumno.id})">🗑️ Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando alumnos:', error);
+        container.innerHTML = '<p class="loading">Error al cargar alumnos</p>';
+    }
+}
+
+async function eliminarAlumno(id) {
+    if (!confirm('¿Estás seguro de eliminar este alumno? Esto eliminará también sus registros de asistencia y participación.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/alumnos/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            showToast('Alumno eliminado', 'success');
+            loadAdminAlumnos();
+            loadAlumnos();
+        } else {
+            showToast('Error al eliminar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al eliminar alumno', 'error');
+    }
+}
+
+// --- TPs ---
+async function loadAdminTPs() {
+    const container = document.getElementById('admin-tps-list');
+    if (!container) return;
+
+    container.innerHTML = '<p class="loading">Cargando TPs...</p>';
+
+    try {
+        // Primero cargar cursos para el select
+        const cursosRes = await fetch(`${API_URL}/cursos`);
+        const cursosData = await cursosRes.json();
+        const cursos = cursosData.cursos || [];
+
+        // Actualizar select de cursos en modal
+        const tpCursoSelect = document.getElementById('tp-curso');
+        if (tpCursoSelect) {
+            tpCursoSelect.innerHTML = '<option value="">Seleccionar curso...</option>' +
+                cursos.map(c => `<option value="${c.id}">${c.nombre_materia} (${c.anio})</option>`).join('');
+        }
+
+        // Cargar TPs de todos los cursos
+        let allTPs = [];
+        for (const curso of cursos) {
+            try {
+                const tpsRes = await fetch(`${API_URL}/tps/curso/${curso.id}`);
+                const tpsData = await tpsRes.json();
+                const tps = tpsData.trabajos_practicos || [];
+                allTPs = allTPs.concat(tps.map(tp => ({ ...tp, curso_nombre: curso.nombre_materia })));
+            } catch (e) {
+                // Ignorar errores individuales
+            }
+        }
+
+        if (allTPs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>No hay trabajos prácticos registrados</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = allTPs.map(tp => `
+            <div class="admin-card">
+                <div class="admin-card-info">
+                    <div class="admin-card-title">${tp.titulo}</div>
+                    <div class="admin-card-subtitle">
+                        ${tp.curso_nombre || 'Curso #' + tp.curso_id} | Entrega: ${tp.fecha_entrega || 'Sin fecha'}
+                    </div>
+                </div>
+                <div class="admin-card-actions">
+                    <button class="btn-edit" onclick="editarTP(${tp.id})">✏️ Editar</button>
+                    <button class="btn-delete" onclick="eliminarTP(${tp.id})">🗑️ Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando TPs:', error);
+        container.innerHTML = '<p class="loading">Error al cargar TPs</p>';
+    }
+}
+
+function abrirModalTP(tp = null) {
+    document.getElementById('modal-tp-titulo').textContent = tp ? 'Editar TP' : 'Nuevo TP';
+    document.getElementById('tp-id').value = tp?.id || '';
+    document.getElementById('tp-curso').value = tp?.curso_id || '';
+    document.getElementById('tp-titulo').value = tp?.titulo || '';
+    document.getElementById('tp-descripcion').value = tp?.descripcion || '';
+    document.getElementById('tp-fecha').value = tp?.fecha_entrega || '';
+    openModal('modal-tp');
+}
+
+async function editarTP(id) {
+    try {
+        const response = await fetch(`${API_URL}/tps/${id}`);
+        const tp = await response.json();
+        abrirModalTP(tp);
+    } catch (error) {
+        showToast('Error al cargar TP', 'error');
+    }
+}
+
+async function guardarTP() {
+    const id = document.getElementById('tp-id').value;
+    const data = {
+        curso_id: parseInt(document.getElementById('tp-curso').value),
+        titulo: document.getElementById('tp-titulo').value,
+        descripcion: document.getElementById('tp-descripcion').value,
+        fecha_entrega: document.getElementById('tp-fecha').value
+    };
+
+    if (!data.curso_id || !data.titulo) {
+        showToast('Completa los campos obligatorios', 'error');
+        return;
+    }
+
+    try {
+        const url = id ? `${API_URL}/tps/${id}` : `${API_URL}/tps`;
+        const method = id ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            showToast(id ? 'TP actualizado' : 'TP creado', 'success');
+            closeModal('modal-tp');
+            loadAdminTPs();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Error al guardar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al guardar TP', 'error');
+    }
+}
+
+async function eliminarTP(id) {
+    if (!confirm('¿Estás seguro de eliminar este TP?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/tps/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            showToast('TP eliminado', 'success');
+            loadAdminTPs();
+        } else {
+            showToast('Error al eliminar', 'error');
+        }
+    } catch (error) {
+        showToast('Error al eliminar TP', 'error');
+    }
+}
+
