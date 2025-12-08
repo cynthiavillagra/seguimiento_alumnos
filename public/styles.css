@@ -1913,3 +1913,90 @@ body {
 .empty-state p {
     margin-bottom: 1rem;
 }
+
+/* ============================================================================
+   EDICIÓN DE CLASES
+   ============================================================================ */
+
+.edit-hint {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.asistencia-edit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    margin-bottom: 0.5rem;
+}
+
+.asistencia-edit-item .alumno-nombre {
+    font-weight: 500;
+    flex: 1;
+}
+
+.estado-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.estado-btn {
+    padding: 0.4rem 0.75rem;
+    border: 2px solid var(--gray-300);
+    background: white;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.estado-btn:hover {
+    transform: translateY(-2px);
+}
+
+.estado-btn.presente.active {
+    border-color: var(--success);
+    background: var(--success);
+    color: white;
+}
+
+.estado-btn.tarde.active {
+    border-color: var(--warning);
+    background: var(--warning);
+    color: white;
+}
+
+.estado-btn.ausente.active {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: white;
+}
+
+#btns-modo-editar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .asistencia-edit-item {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .estado-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .estado-btn {
+        flex: 1;
+        text-align: center;
+    }
+}

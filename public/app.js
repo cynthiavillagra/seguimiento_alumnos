@@ -467,10 +467,155 @@ async function verDetalleClase(claseId) {
     }
 }
 
-function editarClaseActual() {
-    // TODO: Implementar edición de clase
-    showToast('Función de edición en desarrollo', 'info');
-    closeModal('modal-ver-clase');
+// Activar modo edición
+function activarModoEdicion() {
+    const { asistencias } = state.claseVisualizando;
+
+    // Obtener nombres de alumnos del state
+    const alumnosMap = {};
+    if (state.alumnos) {
+        state.alumnos.forEach(a => alumnosMap[a.id] = a);
+    }
+
+    // Guardar asistencias originales para poder cancelar
+    state.asistenciasEditando = JSON.parse(JSON.stringify(asistencias));
+
+    // Mostrar modo edición
+    document.getElementById('ver-clase-modo-ver').style.display = 'none';
+    document.getElementById('ver-clase-modo-editar').style.display = 'block';
+    document.getElementById('btns-modo-ver').style.display = 'none';
+    document.getElementById('btns-modo-editar').style.display = 'flex';
+
+    // Llenar lista editable
+    const container = document.getElementById('editar-clase-asistencias');
+
+    container.innerHTML = asistencias.map(a => {
+        const alumno = alumnosMap[a.alumno_id] || { nombre_completo: `Alumno #${a.alumno_id}` };
+
+        return `
+            <div class="asistencia-edit-item" data-asistencia-id="${a.id}" data-alumno-id="${a.alumno_id}">
+                <span class="alumno-nombre">${alumno.nombre_completo}</span>
+                <div class="estado-buttons">
+                    <button class="estado-btn presente ${a.estado === 'Presente' ? 'active' : ''}" 
+                            onclick="cambiarEstadoAsistencia(${a.id}, 'Presente')">
+                        ✅ Presente
+                    </button>
+                    <button class="estado-btn tarde ${a.estado === 'Tardanza' ? 'active' : ''}" 
+                            onclick="cambiarEstadoAsistencia(${a.id}, 'Tardanza')">
+                        ⏰ Tarde
+                    </button>
+                    <button class="estado-btn ausente ${a.estado === 'Ausente' ? 'active' : ''}" 
+                            onclick="cambiarEstadoAsistencia(${a.id}, 'Ausente')">
+                        ❌ Ausente
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Cambiar estado de asistencia (solo visual, no guarda aún)
+function cambiarEstadoAsistencia(asistenciaId, nuevoEstado) {
+    // Actualizar en el array
+    const asistencia = state.asistenciasEditando.find(a => a.id === asistenciaId);
+    if (asistencia) {
+        asistencia.estado = nuevoEstado;
+        asistencia.modificado = true;
+    }
+
+    // Actualizar UI
+    const item = document.querySelector(`[data-asistencia-id="${asistenciaId}"]`);
+    if (item) {
+        item.querySelectorAll('.estado-btn').forEach(btn => btn.classList.remove('active'));
+        const estadoClass = nuevoEstado === 'Presente' ? 'presente' :
+            nuevoEstado === 'Tardanza' ? 'tarde' : 'ausente';
+        item.querySelector(`.estado-btn.${estadoClass}`).classList.add('active');
+    }
+
+    // Actualizar contadores
+    actualizarContadoresEdicion();
+}
+
+// Actualizar contadores mientras se edita
+function actualizarContadoresEdicion() {
+    let presentes = 0, tardes = 0, ausentes = 0;
+    state.asistenciasEditando.forEach(a => {
+        if (a.estado === 'Presente') presentes++;
+        else if (a.estado === 'Tardanza') tardes++;
+        else if (a.estado === 'Ausente') ausentes++;
+    });
+
+    document.getElementById('ver-presentes').textContent = presentes;
+    document.getElementById('ver-tardes').textContent = tardes;
+    document.getElementById('ver-ausentes').textContent = ausentes;
+}
+
+// Cancelar edición
+function cancelarEdicionClase() {
+    // Restaurar vista original
+    document.getElementById('ver-clase-modo-ver').style.display = 'block';
+    document.getElementById('ver-clase-modo-editar').style.display = 'none';
+    document.getElementById('btns-modo-ver').style.display = 'flex';
+    document.getElementById('btns-modo-editar').style.display = 'none';
+
+    // Restaurar contadores originales
+    const { asistencias } = state.claseVisualizando;
+    let presentes = 0, tardes = 0, ausentes = 0;
+    asistencias.forEach(a => {
+        if (a.estado === 'Presente') presentes++;
+        else if (a.estado === 'Tardanza') tardes++;
+        else if (a.estado === 'Ausente') ausentes++;
+    });
+    document.getElementById('ver-presentes').textContent = presentes;
+    document.getElementById('ver-tardes').textContent = tardes;
+    document.getElementById('ver-ausentes').textContent = ausentes;
+
+    delete state.asistenciasEditando;
+}
+
+// Guardar cambios de edición
+async function guardarEdicionClase() {
+    const cambios = state.asistenciasEditando.filter(a => a.modificado);
+
+    if (cambios.length === 0) {
+        showToast('No hay cambios para guardar', 'info');
+        cancelarEdicionClase();
+        return;
+    }
+
+    showToast('Guardando cambios...', 'info');
+
+    try {
+        let guardados = 0;
+
+        for (const asistencia of cambios) {
+            const response = await fetch(`${API_URL}/asistencias/${asistencia.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: asistencia.estado })
+            });
+
+            if (response.ok) {
+                guardados++;
+            } else {
+                console.error(`Error al actualizar asistencia ${asistencia.id}`);
+            }
+        }
+
+        showToast(`${guardados} asistencia(s) actualizada(s)`, 'success');
+
+        // Cerrar modal y recargar
+        closeModal('modal-ver-clase');
+
+        // Recargar historial si existe
+        if (state.claseSeleccionada) {
+            cargarHistorialClases(state.claseSeleccionada.id);
+        }
+
+    } catch (error) {
+        console.error('Error al guardar cambios:', error);
+        showToast('Error al guardar los cambios', 'error');
+    }
 }
 
 // ============================================================================

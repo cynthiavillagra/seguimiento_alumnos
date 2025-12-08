@@ -613,14 +613,34 @@
                 </div>
             </div>
 
-            <h4 style="margin-top: 1.5rem;">Registro de Asistencias:</h4>
-            <div id="ver-clase-asistencias" class="asistencias-list">
-                <p class="loading">Cargando asistencias...</p>
+            <!-- Modo visualización -->
+            <div id="ver-clase-modo-ver">
+                <h4 style="margin-top: 1.5rem;">Registro de Asistencias:</h4>
+                <div id="ver-clase-asistencias" class="asistencias-list">
+                    <p class="loading">Cargando asistencias...</p>
+                </div>
+            </div>
+
+            <!-- Modo edición -->
+            <div id="ver-clase-modo-editar" style="display: none;">
+                <h4 style="margin-top: 1.5rem;">✏️ Editando Asistencias:</h4>
+                <p class="edit-hint">Click en un estado para cambiarlo</p>
+                <div id="editar-clase-asistencias" class="asistencias-list">
+                    <!-- Se llena dinámicamente -->
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeModal('modal-ver-clase')">Cerrar</button>
-            <button class="btn-primary" onclick="editarClaseActual()">✏️ Editar Clase</button>
+            <!-- Botones modo ver -->
+            <div id="btns-modo-ver">
+                <button class="btn-secondary" onclick="closeModal('modal-ver-clase')">Cerrar</button>
+                <button class="btn-primary" onclick="activarModoEdicion()">✏️ Editar Asistencias</button>
+            </div>
+            <!-- Botones modo editar -->
+            <div id="btns-modo-editar" style="display: none;">
+                <button class="btn-secondary" onclick="cancelarEdicionClase()">Cancelar</button>
+                <button class="btn-primary" onclick="guardarEdicionClase()">💾 Guardar Cambios</button>
+            </div>
         </div>
     </div>
 </div>
