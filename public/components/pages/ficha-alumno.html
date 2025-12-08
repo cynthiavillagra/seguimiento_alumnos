@@ -1,0 +1,103 @@
+<!-- Ficha del Alumno Page -->
+<div id="page-ficha-alumno" class="page">
+    <div class="page-header">
+        <button class="btn-back" onclick="showPage('alumnos')">← Volver</button>
+        <div>
+            <h1 id="ficha-nombre">García, Ana</h1>
+            <p class="subtitle" id="ficha-dni">DNI: 12345678</p>
+        </div>
+    </div>
+
+    <!-- Alerta de Riesgo -->
+    <div class="alert-banner high">
+        <span class="alert-icon">🚨</span>
+        <strong>ALERTA: Riesgo Alto de Deserción</strong>
+    </div>
+
+    <!-- Filtros de Fecha -->
+    <div class="section">
+        <h3>Filtrar Período</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Desde</label>
+                <input type="date" id="filtro-desde" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label>Hasta</label>
+                <input type="date" id="filtro-hasta" class="form-input" />
+            </div>
+            <button class="btn-primary" onclick="aplicarFiltroFechas()">Aplicar</button>
+        </div>
+    </div>
+
+    <!-- Indicadores -->
+    <div class="section">
+        <h2>Indicadores de Rendimiento</h2>
+        <div class="indicadores-grid">
+            <div class="indicador-card danger">
+                <div class="indicador-icon">📊</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Asistencia</div>
+                    <div class="indicador-value">55%</div>
+                    <div class="indicador-detail">11 de 20 clases</div>
+                </div>
+            </div>
+            <div class="indicador-card danger">
+                <div class="indicador-icon">💬</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Participación</div>
+                    <div class="indicador-value">Baja</div>
+                    <div class="indicador-detail">Promedio: 2.1/5</div>
+                </div>
+            </div>
+            <div class="indicador-card danger">
+                <div class="indicador-icon">📝</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Trabajos Prácticos</div>
+                    <div class="indicador-value">40%</div>
+                    <div class="indicador-detail">4 de 10 entregados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Clases -->
+    <div class="section">
+        <h2>Historial de Clases</h2>
+        <div class="historial-container">
+            <div class="historial-item presente">
+                <div class="historial-fecha">07/12/2024</div>
+                <div class="historial-estado">✅ Presente</div>
+                <div class="historial-detalle">Participación: Media</div>
+            </div>
+            <div class="historial-item ausente">
+                <div class="historial-fecha">05/12/2024</div>
+                <div class="historial-estado">❌ Ausente</div>
+                <div class="historial-detalle">-</div>
+            </div>
+            <div class="historial-item presente">
+                <div class="historial-fecha">30/11/2024</div>
+                <div class="historial-estado">✅ Presente</div>
+                <div class="historial-detalle">Participación: Baja</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="section">
+        <div class="actions-grid">
+            <button class="action-btn">
+                <span class="action-icon">📄</span>
+                <span>Exportar PDF</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📧</span>
+                <span>Enviar Alerta</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📞</span>
+                <span>Registrar Contacto</span>
+            </button>
+        </div>
+    </div>
+</div>

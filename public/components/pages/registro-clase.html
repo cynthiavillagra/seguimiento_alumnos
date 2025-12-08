@@ -1,0 +1,78 @@
+<!-- Registro de Clase Page -->
+<div id="page-registro-clase" class="page">
+    <div class="page-header">
+        <div>
+            <h1>Registro de Clase</h1>
+            <p class="subtitle">Toma asistencia y registra participación en tiempo real</p>
+        </div>
+    </div>
+
+    <!-- Selección de Clase -->
+    <div class="section" id="seleccion-clase">
+        <h2>Seleccionar Clase</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="select-materia">Materia</label>
+                <select id="select-materia" class="form-select">
+                    <option value="">Seleccionar materia...</option>
+                    <option value="programacion1">Programación I</option>
+                    <option value="matematica">Matemática</option>
+                    <option value="fisica">Física</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="select-cohorte">Cohorte</label>
+                <select id="select-cohorte" class="form-select">
+                    <option value="">Seleccionar cohorte...</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha-clase">Fecha</label>
+                <input type="date" id="fecha-clase" class="form-input" />
+            </div>
+        </div>
+        <button class="btn-primary btn-large" onclick="iniciarRegistroClase()">
+            <span>▶️</span> Iniciar Registro de Clase
+        </button>
+    </div>
+
+    <!-- Registro de Asistencia (oculto inicialmente) -->
+    <div class="section" id="registro-asistencia" style="display: none;">
+        <div class="clase-header">
+            <div>
+                <h2 id="clase-titulo">Programación I - Cohorte 2024</h2>
+                <p id="clase-fecha">07 de Diciembre de 2024</p>
+            </div>
+            <div class="clase-stats">
+                <span class="stat-badge green">
+                    <strong id="count-presentes">0</strong> Presentes
+                </span>
+                <span class="stat-badge red">
+                    <strong id="count-ausentes">0</strong> Ausentes
+                </span>
+            </div>
+        </div>
+
+        <!-- Lista de Alumnos para Registro -->
+        <div id="lista-registro-alumnos">
+            <!-- Se llena dinámicamente -->
+        </div>
+
+        <!-- Sección de Entregas de TPs -->
+        <div class="tps-section" id="seccion-tps" style="display: none;">
+            <h3>📝 Entregas de Trabajos Prácticos</h3>
+            <div id="lista-tps-clase">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <div class="registro-footer">
+            <button class="btn-secondary" onclick="cancelarRegistro()">Cancelar</button>
+            <button class="btn-primary btn-large" onclick="guardarClase()">
+                <span>💾</span> Guardar y Finalizar Clase
+            </button>
+        </div>
+    </div>
+</div>

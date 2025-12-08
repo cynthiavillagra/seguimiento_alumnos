@@ -1,0 +1,31 @@
+<!-- Modal Inscripciones -->
+<div id="modal-inscripciones" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 id="modal-inscripciones-titulo">Materias del Alumno</h2>
+            <button class="modal-close" onclick="closeModal('modal-inscripciones')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="inscripcion-alumno-id" />
+
+            <h4>Inscribir en nueva materia:</h4>
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label for="inscripcion-curso">Seleccionar Curso</label>
+                    <select id="inscripcion-curso">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="agregarInscripcion()">+ Inscribir</button>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Materias actuales:</h4>
+            <div id="inscripciones-list" class="admin-list">
+                <p class="loading">Cargando...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-inscripciones')">Cerrar</button>
+        </div>
+    </div>
+</div>

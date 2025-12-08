@@ -3,603 +3,591 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Seguimiento de Alumnos</title>
-    <link rel="stylesheet" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Seguimiento de Alumnos</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-icon">🎓</span>
-                <span class="brand-text">Seguimiento de Alumnos</span>
-            </div>
-            <div class="nav-menu">
-                <a href="#dashboard" class="nav-link active" data-page="dashboard">
-                    <span class="nav-icon">📊</span>
-                    Dashboard
-                </a>
-                <a href="#registro-clase" class="nav-link" data-page="registro-clase">
-                    <span class="nav-icon">✍️</span>
-                    Registrar Clase
-                </a>
-                <a href="#alumnos" class="nav-link" data-page="alumnos">
-                    <span class="nav-icon">👥</span>
-                    Alumnos
-                </a>
-                <a href="#alertas" class="nav-link" data-page="alertas">
-                    <span class="nav-icon">🚨</span>
-                    Alertas
-                    <span class="badge">3</span>
-                </a>
-                <a href="#admin" class="nav-link" data-page="admin">
-                    <span class="nav-icon">⚙️</span>
-                    Admin
-                </a>
-            </div>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <span class="brand-icon">🎓</span>
+            <span class="brand-text">Seguimiento de Alumnos</span>
         </div>
-    </nav>
+        <div class="nav-menu">
+            <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                Dashboard
+            </a>
+            <a href="#registro-clase" class="nav-link" data-page="registro-clase">
+                <span class="nav-icon">✍️</span>
+                Registrar Clase
+            </a>
+            <a href="#alumnos" class="nav-link" data-page="alumnos">
+                <span class="nav-icon">👥</span>
+                Alumnos
+            </a>
+            <a href="#alertas" class="nav-link" data-page="alertas">
+                <span class="nav-icon">🚨</span>
+                Alertas
+                <span class="badge">3</span>
+            </a>
+            <a href="#admin" class="nav-link" data-page="admin">
+                <span class="nav-icon">⚙️</span>
+                Admin
+            </a>
+        </div>
+    </div>
+</nav>
 
     <!-- Main Content -->
     <main class="main-content">
         <!-- Dashboard Page -->
-        <div id="page-dashboard" class="page active">
-            <div class="page-header">
-                <h1>Mis Clases</h1>
-                <p class="subtitle">Selecciona una clase para ver detalles o registrar asistencia</p>
-            </div>
+<div id="page-dashboard" class="page active">
+    <div class="page-header">
+        <h1>Mis Clases</h1>
+        <p class="subtitle">Selecciona una clase para ver detalles o registrar asistencia</p>
+    </div>
 
-            <!-- Grid de Clases -->
-            <div id="clases-grid" class="clases-grid">
-                <!-- Se llena dinámicamente con JavaScript -->
-                <div class="loading-clases">
-                    <span style="font-size: 3rem;">⏳</span>
-                    <p>Cargando clases...</p>
-                </div>
-            </div>
+    <!-- Grid de Clases -->
+    <div id="clases-grid" class="clases-grid">
+        <!-- Se llena dinámicamente con JavaScript -->
+        <div class="loading-clases">
+            <span style="font-size: 3rem;">⏳</span>
+            <p>Cargando clases...</p>
         </div>
-
+    </div>
+</div>
         <!-- Vista de Clase Individual -->
-        <div id="page-clase-detalle" class="page">
-            <div class="page-header">
-                <button class="btn-back" onclick="showPage('dashboard')">← Volver al Dashboard</button>
-                <div>
-                    <h1 id="clase-detalle-titulo">Programación I - Cohorte 2024</h1>
-                    <p class="subtitle" id="clase-detalle-subtitulo">Última clase: 05/12/2024</p>
-                </div>
-            </div>
+<div id="page-clase-detalle" class="page">
+    <div class="page-header">
+        <button class="btn-back" onclick="showPage('dashboard')">← Volver al Dashboard</button>
+        <div>
+            <h1 id="clase-detalle-titulo">Programación I - Cohorte 2024</h1>
+            <p class="subtitle" id="clase-detalle-subtitulo">Última clase: 05/12/2024</p>
+        </div>
+    </div>
 
-            <!-- Estadísticas de la Clase -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon blue">👥</div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="clase-total-alumnos">0</div>
-                        <div class="stat-label">Alumnos</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon green">✅</div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="clase-asistencia">0%</div>
-                        <div class="stat-label">Asistencia Promedio</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon orange">⚠️</div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="clase-en-riesgo">0</div>
-                        <div class="stat-label">Alumnos en Riesgo</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon purple">📚</div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="clase-total-clases">0</div>
-                        <div class="stat-label">Clases Dictadas</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Acciones Rápidas -->
-            <div class="section">
-                <h2>Acciones Rápidas</h2>
-                <div class="actions-grid">
-                    <button class="action-btn" onclick="registrarClaseDirecta()">
-                        <span class="action-icon">✍️</span>
-                        <span>Registrar Clase</span>
-                    </button>
-                    <button class="action-btn" onclick="verAlumnosClase()">
-                        <span class="action-icon">👥</span>
-                        <span>Ver Alumnos</span>
-                    </button>
-                    <button class="action-btn" onclick="verAlertasClase()">
-                        <span class="action-icon">🚨</span>
-                        <span>Ver Alertas</span>
-                    </button>
-                    <button class="action-btn">
-                        <span class="action-icon">📊</span>
-                        <span>Generar Reporte</span>
-                    </button>
-                </div>
+    <!-- Estadísticas de la Clase -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-content">
+                <div class="stat-value" id="clase-total-alumnos">0</div>
+                <div class="stat-label">Alumnos</div>
             </div>
         </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="clase-asistencia-promedio">0%</div>
+                <div class="stat-label">Asistencia Promedio</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">📝</div>
+            <div class="stat-content">
+                <div class="stat-value" id="clase-tps-promedio">0%</div>
+                <div class="stat-label">TPs Entregados</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">📅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="clase-total-clases">0</div>
+                <div class="stat-label">Clases Dictadas</div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Acciones Rápidas -->
+    <div class="section">
+        <h2>Acciones Rápidas</h2>
+        <div class="actions-grid">
+            <button class="action-btn" onclick="registrarClaseDirecta()">
+                <span class="action-icon">✍️</span>
+                <span>Registrar Clase</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">👥</span>
+                <span>Ver Alumnos</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📝</span>
+                <span>Gestionar TPs</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📊</span>
+                <span>Generar Reporte</span>
+            </button>
+        </div>
+    </div>
+</div>
         <!-- Registro de Clase Page -->
-        <div id="page-registro-clase" class="page">
-            <div class="page-header">
-                <div>
-                    <h1>Registro de Clase</h1>
-                    <p class="subtitle">Toma asistencia y registra participación en tiempo real</p>
-                </div>
-            </div>
-
-            <!-- Selección de Clase -->
-            <div class="section" id="seleccion-clase">
-                <h2>Seleccionar Clase</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="select-materia">Materia</label>
-                        <select id="select-materia" class="form-select">
-                            <option value="">Seleccionar materia...</option>
-                            <option value="programacion1">Programación I</option>
-                            <option value="matematica">Matemática</option>
-                            <option value="fisica">Física</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="select-cohorte">Cohorte</label>
-                        <select id="select-cohorte" class="form-select">
-                            <option value="">Seleccionar cohorte...</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="fecha-clase">Fecha</label>
-                        <input type="date" id="fecha-clase" class="form-input" />
-                    </div>
-                </div>
-                <button class="btn-primary btn-large" onclick="iniciarRegistroClase()">
-                    <span>▶️</span> Iniciar Registro de Clase
-                </button>
-            </div>
-
-            <!-- Registro de Asistencia (oculto inicialmente) -->
-            <div class="section" id="registro-asistencia" style="display: none;">
-                <div class="clase-header">
-                    <div>
-                        <h2 id="clase-titulo">Programación I - Cohorte 2024</h2>
-                        <p id="clase-fecha">07 de Diciembre de 2024</p>
-                    </div>
-                    <div class="clase-stats">
-                        <span class="stat-badge green">
-                            <strong id="count-presentes">0</strong> Presentes
-                        </span>
-                        <span class="stat-badge red">
-                            <strong id="count-ausentes">0</strong> Ausentes
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Lista de Alumnos para Registro -->
-                <div id="lista-registro-alumnos">
-                    <!-- Se llena dinámicamente -->
-                </div>
-
-                <!-- Sección de Entregas de TPs -->
-                <div class="tps-section" id="seccion-tps" style="display: none;">
-                    <h3>📝 Entregas de Trabajos Prácticos</h3>
-                    <div id="lista-tps-clase">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-
-                <div class="registro-footer">
-                    <button class="btn-secondary" onclick="cancelarRegistro()">Cancelar</button>
-                    <button class="btn-primary btn-large" onclick="guardarClase()">
-                        <span>💾</span> Guardar y Finalizar Clase
-                    </button>
-                </div>
-            </div>
+<div id="page-registro-clase" class="page">
+    <div class="page-header">
+        <div>
+            <h1>Registro de Clase</h1>
+            <p class="subtitle">Toma asistencia y registra participación en tiempo real</p>
         </div>
+    </div>
 
-        <!-- Alumnos Page -->
-        <div id="page-alumnos" class="page">
-            <div class="page-header">
-                <div>
-                    <h1>Gestión de Alumnos</h1>
-                    <p class="subtitle">Administra la información de los estudiantes</p>
-                </div>
-                <button class="btn-primary" onclick="showModal('modal-nuevo-alumno')">
-                    <span>➕</span> Nuevo Alumno
-                </button>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="toolbar">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-alumnos" placeholder="Buscar por nombre, DNI o email..." />
-                </div>
-                <select class="filter-select" id="filter-cohorte">
-                    <option value="">Todas las cohortes</option>
-                    <option value="2024">Cohorte 2024</option>
-                    <option value="2023">Cohorte 2023</option>
-                    <option value="2022">Cohorte 2022</option>
+    <!-- Selección de Clase -->
+    <div class="section" id="seleccion-clase">
+        <h2>Seleccionar Clase</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="select-materia">Materia</label>
+                <select id="select-materia" class="form-select">
+                    <option value="">Seleccionar materia...</option>
+                    <option value="programacion1">Programación I</option>
+                    <option value="matematica">Matemática</option>
+                    <option value="fisica">Física</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="select-cohorte">Cohorte</label>
+                <select id="select-cohorte" class="form-select">
+                    <option value="">Seleccionar cohorte...</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha-clase">Fecha</label>
+                <input type="date" id="fecha-clase" class="form-input" />
+            </div>
+        </div>
+        <button class="btn-primary btn-large" onclick="iniciarRegistroClase()">
+            <span>▶️</span> Iniciar Registro de Clase
+        </button>
+    </div>
 
-            <!-- Alumnos Table -->
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre Completo</th>
-                            <th>DNI</th>
-                            <th>Email</th>
-                            <th>Cohorte</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="alumnos-tbody">
-                        <tr>
-                            <td colspan="7" class="loading">Cargando alumnos...</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Registro de Asistencia (oculto inicialmente) -->
+    <div class="section" id="registro-asistencia" style="display: none;">
+        <div class="clase-header">
+            <div>
+                <h2 id="clase-titulo">Programación I - Cohorte 2024</h2>
+                <p id="clase-fecha">07 de Diciembre de 2024</p>
+            </div>
+            <div class="clase-stats">
+                <span class="stat-badge green">
+                    <strong id="count-presentes">0</strong> Presentes
+                </span>
+                <span class="stat-badge red">
+                    <strong id="count-ausentes">0</strong> Ausentes
+                </span>
             </div>
         </div>
 
+        <!-- Lista de Alumnos para Registro -->
+        <div id="lista-registro-alumnos">
+            <!-- Se llena dinámicamente -->
+        </div>
+
+        <!-- Sección de Entregas de TPs -->
+        <div class="tps-section" id="seccion-tps" style="display: none;">
+            <h3>📝 Entregas de Trabajos Prácticos</h3>
+            <div id="lista-tps-clase">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <div class="registro-footer">
+            <button class="btn-secondary" onclick="cancelarRegistro()">Cancelar</button>
+            <button class="btn-primary btn-large" onclick="guardarClase()">
+                <span>💾</span> Guardar y Finalizar Clase
+            </button>
+        </div>
+    </div>
+</div>
+        <!-- Alumnos Page -->
+<div id="page-alumnos" class="page">
+    <div class="page-header">
+        <div>
+            <h1>Gestión de Alumnos</h1>
+            <p class="subtitle">Administra la información de los estudiantes</p>
+        </div>
+        <button class="btn-primary" onclick="showModal('modal-nuevo-alumno')">
+            <span>➕</span> Nuevo Alumno
+        </button>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="toolbar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-alumnos" placeholder="Buscar por nombre, DNI o email..." />
+        </div>
+        <select class="filter-select" id="filter-cohorte">
+            <option value="">Todas las cohortes</option>
+            <option value="2024">Cohorte 2024</option>
+            <option value="2023">Cohorte 2023</option>
+            <option value="2022">Cohorte 2022</option>
+        </select>
+    </div>
+
+    <!-- Alumnos Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>DNI</th>
+                    <th>Email</th>
+                    <th>Cohorte</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="alumnos-tbody">
+                <tr>
+                    <td colspan="7" class="loading">Cargando alumnos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
         <!-- Alertas Page -->
-        <div id="page-alertas" class="page">
-            <div class="page-header">
-                <h1>Alertas de Riesgo</h1>
-                <p class="subtitle">Alumnos que requieren atención</p>
-            </div>
+<div id="page-alertas" class="page">
+    <div class="page-header">
+        <h1>Alertas de Riesgo</h1>
+        <p class="subtitle">Alumnos que requieren atención</p>
+    </div>
 
-            <div class="alerts-container">
-                <div class="alert-card high">
-                    <div class="alert-header">
-                        <span class="alert-icon">🚨</span>
-                        <span class="alert-level">Riesgo Alto</span>
-                    </div>
-                    <div class="alert-content">
-                        <h3>García, Ana</h3>
-                        <p>Asistencia: 55% | TPs: 40% | Participación: Baja</p>
-                        <button class="btn-sm" onclick="verFichaAlumno(1)">Ver Ficha Completa</button>
-                    </div>
-                </div>
-
-                <div class="alert-card medium">
-                    <div class="alert-header">
-                        <span class="alert-icon">⚠️</span>
-                        <span class="alert-level">Riesgo Medio</span>
-                    </div>
-                    <div class="alert-content">
-                        <h3>López, Carlos</h3>
-                        <p>Asistencia: 72% | TPs: 65% | Participación: Media</p>
-                        <button class="btn-sm" onclick="verFichaAlumno(2)">Ver Ficha Completa</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ficha del Alumno Page -->
-        <div id="page-ficha-alumno" class="page">
-            <div class="page-header">
-                <button class="btn-back" onclick="showPage('alumnos')">← Volver</button>
-                <div>
-                    <h1 id="ficha-nombre">García, Ana</h1>
-                    <p class="subtitle" id="ficha-dni">DNI: 12345678</p>
-                </div>
-            </div>
-
-            <!-- Alerta de Riesgo -->
-            <div class="alert-banner high">
+    <div class="alerts-container">
+        <div class="alert-card high">
+            <div class="alert-header">
                 <span class="alert-icon">🚨</span>
-                <strong>ALERTA: Riesgo Alto de Deserción</strong>
+                <span class="alert-level">Riesgo Alto</span>
             </div>
-
-            <!-- Filtros de Fecha -->
-            <div class="section">
-                <h3>Filtrar Período</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Desde</label>
-                        <input type="date" id="filtro-desde" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label>Hasta</label>
-                        <input type="date" id="filtro-hasta" class="form-input" />
-                    </div>
-                    <button class="btn-primary" onclick="aplicarFiltroFechas()">Aplicar</button>
-                </div>
-            </div>
-
-            <!-- Indicadores -->
-            <div class="section">
-                <h2>Indicadores de Rendimiento</h2>
-                <div class="indicadores-grid">
-                    <div class="indicador-card danger">
-                        <div class="indicador-icon">📊</div>
-                        <div class="indicador-content">
-                            <div class="indicador-label">Asistencia</div>
-                            <div class="indicador-value">55%</div>
-                            <div class="indicador-detail">11 de 20 clases</div>
-                        </div>
-                    </div>
-                    <div class="indicador-card danger">
-                        <div class="indicador-icon">💬</div>
-                        <div class="indicador-content">
-                            <div class="indicador-label">Participación</div>
-                            <div class="indicador-value">Baja</div>
-                            <div class="indicador-detail">Promedio: 2.1/5</div>
-                        </div>
-                    </div>
-                    <div class="indicador-card danger">
-                        <div class="indicador-icon">📝</div>
-                        <div class="indicador-content">
-                            <div class="indicador-label">Trabajos Prácticos</div>
-                            <div class="indicador-value">40%</div>
-                            <div class="indicador-detail">4 de 10 entregados</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Historial de Clases -->
-            <div class="section">
-                <h2>Historial de Clases</h2>
-                <div class="historial-container">
-                    <div class="historial-item presente">
-                        <div class="historial-fecha">07/12/2024</div>
-                        <div class="historial-estado">✅ Presente</div>
-                        <div class="historial-detalle">Participación: Media</div>
-                    </div>
-                    <div class="historial-item ausente">
-                        <div class="historial-fecha">05/12/2024</div>
-                        <div class="historial-estado">❌ Ausente</div>
-                        <div class="historial-detalle">-</div>
-                    </div>
-                    <div class="historial-item presente">
-                        <div class="historial-fecha">30/11/2024</div>
-                        <div class="historial-estado">✅ Presente</div>
-                        <div class="historial-detalle">Participación: Baja</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Acciones -->
-            <div class="section">
-                <div class="actions-grid">
-                    <button class="action-btn">
-                        <span class="action-icon">📄</span>
-                        <span>Exportar PDF</span>
-                    </button>
-                    <button class="action-btn">
-                        <span class="action-icon">📧</span>
-                        <span>Enviar Alerta</span>
-                    </button>
-                    <button class="action-btn">
-                        <span class="action-icon">📞</span>
-                        <span>Registrar Contacto</span>
-                    </button>
-                </div>
+            <div class="alert-content">
+                <h3>García, Ana</h3>
+                <p>Asistencia: 55% | TPs: 40% | Participación: Baja</p>
+                <button class="btn-sm" onclick="verFichaAlumno(1)">Ver Ficha Completa</button>
             </div>
         </div>
 
+        <div class="alert-card medium">
+            <div class="alert-header">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-level">Riesgo Medio</span>
+            </div>
+            <div class="alert-content">
+                <h3>López, Carlos</h3>
+                <p>Asistencia: 72% | TPs: 65% | Participación: Media</p>
+                <button class="btn-sm" onclick="verFichaAlumno(2)">Ver Ficha Completa</button>
+            </div>
+        </div>
+    </div>
+</div>
+        <!-- Ficha del Alumno Page -->
+<div id="page-ficha-alumno" class="page">
+    <div class="page-header">
+        <button class="btn-back" onclick="showPage('alumnos')">← Volver</button>
+        <div>
+            <h1 id="ficha-nombre">García, Ana</h1>
+            <p class="subtitle" id="ficha-dni">DNI: 12345678</p>
+        </div>
+    </div>
+
+    <!-- Alerta de Riesgo -->
+    <div class="alert-banner high">
+        <span class="alert-icon">🚨</span>
+        <strong>ALERTA: Riesgo Alto de Deserción</strong>
+    </div>
+
+    <!-- Filtros de Fecha -->
+    <div class="section">
+        <h3>Filtrar Período</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Desde</label>
+                <input type="date" id="filtro-desde" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label>Hasta</label>
+                <input type="date" id="filtro-hasta" class="form-input" />
+            </div>
+            <button class="btn-primary" onclick="aplicarFiltroFechas()">Aplicar</button>
+        </div>
+    </div>
+
+    <!-- Indicadores -->
+    <div class="section">
+        <h2>Indicadores de Rendimiento</h2>
+        <div class="indicadores-grid">
+            <div class="indicador-card danger">
+                <div class="indicador-icon">📊</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Asistencia</div>
+                    <div class="indicador-value">55%</div>
+                    <div class="indicador-detail">11 de 20 clases</div>
+                </div>
+            </div>
+            <div class="indicador-card danger">
+                <div class="indicador-icon">💬</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Participación</div>
+                    <div class="indicador-value">Baja</div>
+                    <div class="indicador-detail">Promedio: 2.1/5</div>
+                </div>
+            </div>
+            <div class="indicador-card danger">
+                <div class="indicador-icon">📝</div>
+                <div class="indicador-content">
+                    <div class="indicador-label">Trabajos Prácticos</div>
+                    <div class="indicador-value">40%</div>
+                    <div class="indicador-detail">4 de 10 entregados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Clases -->
+    <div class="section">
+        <h2>Historial de Clases</h2>
+        <div class="historial-container">
+            <div class="historial-item presente">
+                <div class="historial-fecha">07/12/2024</div>
+                <div class="historial-estado">✅ Presente</div>
+                <div class="historial-detalle">Participación: Media</div>
+            </div>
+            <div class="historial-item ausente">
+                <div class="historial-fecha">05/12/2024</div>
+                <div class="historial-estado">❌ Ausente</div>
+                <div class="historial-detalle">-</div>
+            </div>
+            <div class="historial-item presente">
+                <div class="historial-fecha">30/11/2024</div>
+                <div class="historial-estado">✅ Presente</div>
+                <div class="historial-detalle">Participación: Baja</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="section">
+        <div class="actions-grid">
+            <button class="action-btn">
+                <span class="action-icon">📄</span>
+                <span>Exportar PDF</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📧</span>
+                <span>Enviar Alerta</span>
+            </button>
+            <button class="action-btn">
+                <span class="action-icon">📞</span>
+                <span>Registrar Contacto</span>
+            </button>
+        </div>
+    </div>
+</div>
         <!-- Admin Page -->
-        <div id="page-admin" class="page">
-            <div class="page-header">
-                <div>
-                    <h1>⚙️ Administración</h1>
-                    <p class="subtitle">Gestiona cursos, alumnos y trabajos prácticos</p>
-                </div>
-                <div class="seed-buttons">
-                    <button class="btn-primary" onclick="cargarDatosPrueba()">🌱 Cargar Datos</button>
-                    <button class="btn-secondary" onclick="borrarTodo()">⚠️ Borrar TODO</button>
-                </div>
-            </div>
-
-            <!-- Tabs de Admin -->
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="showAdminTab('cursos')">📚 Cursos</button>
-                <button class="admin-tab" onclick="showAdminTab('alumnos-admin')">👥 Alumnos</button>
-                <button class="admin-tab" onclick="showAdminTab('tps')">📝 TPs</button>
-            </div>
-
-            <!-- Tab Cursos -->
-            <div id="admin-tab-cursos" class="admin-tab-content active">
-                <div class="admin-header">
-                    <h3>Gestión de Cursos</h3>
-                    <button class="btn-primary" onclick="abrirModalCurso()">+ Nuevo Curso</button>
-                </div>
-                <div id="admin-cursos-list" class="admin-list">
-                    <p class="loading">Cargando cursos...</p>
-                </div>
-            </div>
-
-            <!-- Tab Alumnos -->
-            <div id="admin-tab-alumnos-admin" class="admin-tab-content">
-                <div class="admin-header">
-                    <h3>Gestión de Alumnos</h3>
-                    <button class="btn-primary" onclick="openModal('modal-nuevo-alumno')">+ Nuevo Alumno</button>
-                </div>
-                <div id="admin-alumnos-list" class="admin-list">
-                    <p class="loading">Cargando alumnos...</p>
-                </div>
-            </div>
-
-            <!-- Tab TPs -->
-            <div id="admin-tab-tps" class="admin-tab-content">
-                <div class="admin-header">
-                    <h3>Gestión de Trabajos Prácticos</h3>
-                    <button class="btn-primary" onclick="abrirModalTP()">+ Nuevo TP</button>
-                </div>
-                <div id="admin-tps-list" class="admin-list">
-                    <p class="loading">Cargando TPs...</p>
-                </div>
-            </div>
+<div id="page-admin" class="page">
+    <div class="page-header">
+        <div>
+            <h1>⚙️ Administración</h1>
+            <p class="subtitle">Gestiona cursos, alumnos y trabajos prácticos</p>
         </div>
+        <div class="seed-buttons">
+            <button class="btn-primary" onclick="cargarDatosPrueba()">🌱 Cargar Datos</button>
+            <button class="btn-secondary" onclick="borrarTodo()">⚠️ Borrar TODO</button>
+        </div>
+    </div>
 
+    <!-- Tabs de Admin -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showAdminTab('cursos')">📚 Cursos</button>
+        <button class="admin-tab" onclick="showAdminTab('alumnos-admin')">👥 Alumnos</button>
+        <button class="admin-tab" onclick="showAdminTab('tps')">📝 TPs</button>
+    </div>
+
+    <!-- Tab Cursos -->
+    <div id="admin-tab-cursos" class="admin-tab-content active">
+        <div class="admin-header">
+            <h3>Gestión de Cursos</h3>
+            <button class="btn-primary" onclick="abrirModalCurso()">+ Nuevo Curso</button>
+        </div>
+        <div id="admin-cursos-list" class="admin-list">
+            <p class="loading">Cargando cursos...</p>
+        </div>
+    </div>
+
+    <!-- Tab Alumnos -->
+    <div id="admin-tab-alumnos-admin" class="admin-tab-content">
+        <div class="admin-header">
+            <h3>Gestión de Alumnos</h3>
+            <button class="btn-primary" onclick="openModal('modal-nuevo-alumno')">+ Nuevo Alumno</button>
+        </div>
+        <div id="admin-alumnos-list" class="admin-list">
+            <p class="loading">Cargando alumnos...</p>
+        </div>
+    </div>
+
+    <!-- Tab TPs -->
+    <div id="admin-tab-tps" class="admin-tab-content">
+        <div class="admin-header">
+            <h3>Gestión de Trabajos Prácticos</h3>
+            <button class="btn-primary" onclick="abrirModalTP()">+ Nuevo TP</button>
+        </div>
+        <div id="admin-tps-list" class="admin-list">
+            <p class="loading">Cargando TPs...</p>
+        </div>
+    </div>
+</div>
     </main>
 
+    <!-- Modales -->
     <!-- Modal: Nuevo Alumno -->
-    <div id="modal-nuevo-alumno" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nuevo Alumno</h2>
-                <button class="modal-close" onclick="closeModal('modal-nuevo-alumno')">&times;</button>
+<div id="modal-nuevo-alumno" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nuevo Alumno</h2>
+            <button class="modal-close" onclick="closeModal('modal-nuevo-alumno')">&times;</button>
+        </div>
+        <form id="form-nuevo-alumno" class="modal-body">
+            <div class="form-group">
+                <label for="nombre">Nombre *</label>
+                <input type="text" id="nombre" name="nombre" required />
             </div>
-            <form id="form-nuevo-alumno" class="modal-body">
-                <div class="form-group">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" id="nombre" name="nombre" required />
-                </div>
-                <div class="form-group">
-                    <label for="apellido">Apellido *</label>
-                    <input type="text" id="apellido" name="apellido" required />
-                </div>
-                <div class="form-group">
-                    <label for="dni">DNI *</label>
-                    <input type="text" id="dni" name="dni" required />
-                </div>
-                <div class="form-group">
-                    <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" required />
-                </div>
-                <div class="form-group">
-                    <label for="cohorte">Cohorte *</label>
-                    <select id="cohorte" name="cohorte" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                    </select>
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('modal-nuevo-alumno')">Cancelar</button>
-                <button class="btn-primary" onclick="crearAlumno()">Crear Alumno</button>
+            <div class="form-group">
+                <label for="apellido">Apellido *</label>
+                <input type="text" id="apellido" name="apellido" required />
             </div>
+            <div class="form-group">
+                <label for="dni">DNI *</label>
+                <input type="text" id="dni" name="dni" required />
+            </div>
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required />
+            </div>
+            <div class="form-group">
+                <label for="cohorte">Cohorte *</label>
+                <select id="cohorte" name="cohorte" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-nuevo-alumno')">Cancelar</button>
+            <button class="btn-primary" onclick="crearAlumno()">Crear Alumno</button>
         </div>
     </div>
-
+</div>
     <!-- Modal Editar Curso -->
-    <div id="modal-curso" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-curso-titulo">Nuevo Curso</h2>
-                <button class="modal-close" onclick="closeModal('modal-curso')">&times;</button>
+<div id="modal-curso" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-curso-titulo">Nuevo Curso</h2>
+            <button class="modal-close" onclick="closeModal('modal-curso')">&times;</button>
+        </div>
+        <form id="form-curso">
+            <input type="hidden" id="curso-id" />
+            <div class="form-group">
+                <label for="curso-nombre">Nombre de la Materia *</label>
+                <input type="text" id="curso-nombre" required />
             </div>
-            <form id="form-curso">
-                <input type="hidden" id="curso-id" />
-                <div class="form-group">
-                    <label for="curso-nombre">Nombre de la Materia *</label>
-                    <input type="text" id="curso-nombre" required />
-                </div>
-                <div class="form-group">
-                    <label for="curso-anio">Año *</label>
-                    <input type="number" id="curso-anio" min="2020" max="2030" required />
-                </div>
-                <div class="form-group">
-                    <label for="curso-cuatrimestre">Cuatrimestre *</label>
-                    <select id="curso-cuatrimestre" required>
-                        <option value="1">1° Cuatrimestre</option>
-                        <option value="2">2° Cuatrimestre</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="curso-docente">Docente Responsable *</label>
-                    <input type="text" id="curso-docente" required />
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('modal-curso')">Cancelar</button>
-                <button class="btn-primary" onclick="guardarCurso()">Guardar</button>
+            <div class="form-group">
+                <label for="curso-anio">Año *</label>
+                <input type="number" id="curso-anio" min="2020" max="2030" required />
             </div>
+            <div class="form-group">
+                <label for="curso-cuatrimestre">Cuatrimestre *</label>
+                <select id="curso-cuatrimestre" required>
+                    <option value="1">1° Cuatrimestre</option>
+                    <option value="2">2° Cuatrimestre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="curso-docente">Docente Responsable *</label>
+                <input type="text" id="curso-docente" required />
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-curso')">Cancelar</button>
+            <button class="btn-primary" onclick="guardarCurso()">Guardar</button>
         </div>
     </div>
-
+</div>
     <!-- Modal TP -->
-    <div id="modal-tp" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-tp-titulo">Nuevo TP</h2>
-                <button class="modal-close" onclick="closeModal('modal-tp')">&times;</button>
+<div id="modal-tp" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-tp-titulo">Nuevo TP</h2>
+            <button class="modal-close" onclick="closeModal('modal-tp')">&times;</button>
+        </div>
+        <form id="form-tp">
+            <input type="hidden" id="tp-id" />
+            <div class="form-group">
+                <label for="tp-curso">Curso *</label>
+                <select id="tp-curso" required>
+                    <option value="">Seleccionar curso...</option>
+                </select>
             </div>
-            <form id="form-tp">
-                <input type="hidden" id="tp-id" />
-                <div class="form-group">
-                    <label for="tp-curso">Curso *</label>
-                    <select id="tp-curso" required>
-                        <option value="">Seleccionar curso...</option>
+            <div class="form-group">
+                <label for="tp-titulo">Título *</label>
+                <input type="text" id="tp-titulo" required />
+            </div>
+            <div class="form-group">
+                <label for="tp-descripcion">Descripción</label>
+                <textarea id="tp-descripcion" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tp-fecha">Fecha de Entrega *</label>
+                <input type="date" id="tp-fecha" required />
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-tp')">Cancelar</button>
+            <button class="btn-primary" onclick="guardarTP()">Guardar</button>
+        </div>
+    </div>
+</div>
+    <!-- Modal Inscripciones -->
+<div id="modal-inscripciones" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 id="modal-inscripciones-titulo">Materias del Alumno</h2>
+            <button class="modal-close" onclick="closeModal('modal-inscripciones')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="inscripcion-alumno-id" />
+
+            <h4>Inscribir en nueva materia:</h4>
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label for="inscripcion-curso">Seleccionar Curso</label>
+                    <select id="inscripcion-curso">
+                        <option value="">Seleccionar...</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="tp-titulo">Título *</label>
-                    <input type="text" id="tp-titulo" required />
-                </div>
-                <div class="form-group">
-                    <label for="tp-descripcion">Descripción</label>
-                    <textarea id="tp-descripcion" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="tp-fecha">Fecha de Entrega *</label>
-                    <input type="date" id="tp-fecha" required />
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('modal-tp')">Cancelar</button>
-                <button class="btn-primary" onclick="guardarTP()">Guardar</button>
+                <button class="btn-primary" onclick="agregarInscripcion()">+ Inscribir</button>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Materias actuales:</h4>
+            <div id="inscripciones-list" class="admin-list">
+                <p class="loading">Cargando...</p>
             </div>
         </div>
-    </div>
-
-    <!-- Modal Inscripciones -->
-    <div id="modal-inscripciones" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 id="modal-inscripciones-titulo">Materias del Alumno</h2>
-                <button class="modal-close" onclick="closeModal('modal-inscripciones')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="inscripcion-alumno-id" />
-
-                <h4>Inscribir en nueva materia:</h4>
-                <div class="form-group" style="display: flex; gap: 1rem; align-items: flex-end;">
-                    <div style="flex: 1;">
-                        <label for="inscripcion-curso">Seleccionar Curso</label>
-                        <select id="inscripcion-curso">
-                            <option value="">Seleccionar...</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" onclick="agregarInscripcion()">+ Inscribir</button>
-                </div>
-
-                <h4 style="margin-top: 1.5rem;">Materias actuales:</h4>
-                <div id="inscripciones-list" class="admin-list">
-                    <p class="loading">Cargando...</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('modal-inscripciones')">Cerrar</button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-inscripciones')">Cerrar</button>
         </div>
     </div>
+</div>
 
     <!-- Toast Notifications -->
-    <div id="toast-container"></div>
+<div id="toast-container"></div>
 
-    <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 
 </html>

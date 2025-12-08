@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    {{ include "components/head.html" }}
+</head>
+
+<body>
+    {{ include "components/navbar.html" }}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {{ include "components/pages/dashboard.html" }}
+        {{ include "components/pages/clase-detalle.html" }}
+        {{ include "components/pages/registro-clase.html" }}
+        {{ include "components/pages/alumnos.html" }}
+        {{ include "components/pages/alertas.html" }}
+        {{ include "components/pages/ficha-alumno.html" }}
+        {{ include "components/pages/admin.html" }}
+    </main>
+
+    <!-- Modales -->
+    {{ include "components/modals/alumno.html" }}
+    {{ include "components/modals/curso.html" }}
+    {{ include "components/modals/tp.html" }}
+    {{ include "components/modals/inscripciones.html" }}
+
+    {{ include "components/footer.html" }}
+</body>
+
+</html>

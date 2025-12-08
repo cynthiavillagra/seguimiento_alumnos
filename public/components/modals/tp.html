@@ -1,0 +1,34 @@
+<!-- Modal TP -->
+<div id="modal-tp" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-tp-titulo">Nuevo TP</h2>
+            <button class="modal-close" onclick="closeModal('modal-tp')">&times;</button>
+        </div>
+        <form id="form-tp">
+            <input type="hidden" id="tp-id" />
+            <div class="form-group">
+                <label for="tp-curso">Curso *</label>
+                <select id="tp-curso" required>
+                    <option value="">Seleccionar curso...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tp-titulo">Título *</label>
+                <input type="text" id="tp-titulo" required />
+            </div>
+            <div class="form-group">
+                <label for="tp-descripcion">Descripción</label>
+                <textarea id="tp-descripcion" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tp-fecha">Fecha de Entrega *</label>
+                <input type="date" id="tp-fecha" required />
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-tp')">Cancelar</button>
+            <button class="btn-primary" onclick="guardarTP()">Guardar</button>
+        </div>
+    </div>
+</div>

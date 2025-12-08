@@ -1,0 +1,48 @@
+<!-- Alumnos Page -->
+<div id="page-alumnos" class="page">
+    <div class="page-header">
+        <div>
+            <h1>Gestión de Alumnos</h1>
+            <p class="subtitle">Administra la información de los estudiantes</p>
+        </div>
+        <button class="btn-primary" onclick="showModal('modal-nuevo-alumno')">
+            <span>➕</span> Nuevo Alumno
+        </button>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="toolbar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-alumnos" placeholder="Buscar por nombre, DNI o email..." />
+        </div>
+        <select class="filter-select" id="filter-cohorte">
+            <option value="">Todas las cohortes</option>
+            <option value="2024">Cohorte 2024</option>
+            <option value="2023">Cohorte 2023</option>
+            <option value="2022">Cohorte 2022</option>
+        </select>
+    </div>
+
+    <!-- Alumnos Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>DNI</th>
+                    <th>Email</th>
+                    <th>Cohorte</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="alumnos-tbody">
+                <tr>
+                    <td colspan="7" class="loading">Cargando alumnos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

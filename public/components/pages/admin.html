@@ -1,0 +1,53 @@
+<!-- Admin Page -->
+<div id="page-admin" class="page">
+    <div class="page-header">
+        <div>
+            <h1>⚙️ Administración</h1>
+            <p class="subtitle">Gestiona cursos, alumnos y trabajos prácticos</p>
+        </div>
+        <div class="seed-buttons">
+            <button class="btn-primary" onclick="cargarDatosPrueba()">🌱 Cargar Datos</button>
+            <button class="btn-secondary" onclick="borrarTodo()">⚠️ Borrar TODO</button>
+        </div>
+    </div>
+
+    <!-- Tabs de Admin -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showAdminTab('cursos')">📚 Cursos</button>
+        <button class="admin-tab" onclick="showAdminTab('alumnos-admin')">👥 Alumnos</button>
+        <button class="admin-tab" onclick="showAdminTab('tps')">📝 TPs</button>
+    </div>
+
+    <!-- Tab Cursos -->
+    <div id="admin-tab-cursos" class="admin-tab-content active">
+        <div class="admin-header">
+            <h3>Gestión de Cursos</h3>
+            <button class="btn-primary" onclick="abrirModalCurso()">+ Nuevo Curso</button>
+        </div>
+        <div id="admin-cursos-list" class="admin-list">
+            <p class="loading">Cargando cursos...</p>
+        </div>
+    </div>
+
+    <!-- Tab Alumnos -->
+    <div id="admin-tab-alumnos-admin" class="admin-tab-content">
+        <div class="admin-header">
+            <h3>Gestión de Alumnos</h3>
+            <button class="btn-primary" onclick="openModal('modal-nuevo-alumno')">+ Nuevo Alumno</button>
+        </div>
+        <div id="admin-alumnos-list" class="admin-list">
+            <p class="loading">Cargando alumnos...</p>
+        </div>
+    </div>
+
+    <!-- Tab TPs -->
+    <div id="admin-tab-tps" class="admin-tab-content">
+        <div class="admin-header">
+            <h3>Gestión de Trabajos Prácticos</h3>
+            <button class="btn-primary" onclick="abrirModalTP()">+ Nuevo TP</button>
+        </div>
+        <div id="admin-tps-list" class="admin-list">
+            <p class="loading">Cargando TPs...</p>
+        </div>
+    </div>
+</div>
