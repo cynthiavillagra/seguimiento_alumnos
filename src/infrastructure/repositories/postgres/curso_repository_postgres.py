@@ -59,6 +59,7 @@ class CursoRepositoryPostgres(CursoRepositoryBase):
         try:
             cursor.execute(query, (id,))
             row = cursor.fetchone()
+            self.conexion.commit()
             return self._row_to_curso(row) if row else None
         finally:
             cursor.close()
@@ -74,6 +75,7 @@ class CursoRepositoryPostgres(CursoRepositoryBase):
         try:
             cursor.execute(query)
             rows = cursor.fetchall()
+            self.conexion.commit()  # Close transaction
             return [self._row_to_curso(row) for row in rows]
         finally:
             cursor.close()
@@ -86,6 +88,7 @@ class CursoRepositoryPostgres(CursoRepositoryBase):
         try:
             cursor.execute(query, (anio,))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_curso(row) for row in rows]
         finally:
             cursor.close()

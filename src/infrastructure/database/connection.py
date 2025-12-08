@@ -18,13 +18,20 @@ def get_db_connection():
     """
     global _connection
     
-    # Verificar si la conexión está cerrada
+    # Verificar si la conexión está cerrada o en mal estado
     if _connection is not None:
         try:
+            # Limpiar cualquier transacción pendiente
+            try:
+                _connection.rollback()
+            except:
+                pass
+            
             # Test simple
             cursor = _connection.cursor()
             cursor.execute("SELECT 1")
             cursor.close()
+            _connection.commit()
         except Exception:
             _connection = None
     
@@ -55,6 +62,7 @@ def get_db_connection():
         
         try:
             _connection = pg8000.connect(**connect_params)
+            # pg8000 starts in autocommit=False, which is fine
             print("✅ Conexión a PostgreSQL exitosa (pg8000)")
         except Exception as e:
             print(f"❌ Error conectando a PostgreSQL: {e}")

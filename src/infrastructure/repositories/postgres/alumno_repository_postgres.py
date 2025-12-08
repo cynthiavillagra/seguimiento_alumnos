@@ -97,6 +97,7 @@ class AlumnoRepositoryPostgres(AlumnoRepositoryBase):
         try:
             cursor.execute(query)
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_alumno(row) for row in rows]
         finally:
             cursor.close()
@@ -114,6 +115,7 @@ class AlumnoRepositoryPostgres(AlumnoRepositoryBase):
         try:
             cursor.execute(query, (search_term, search_term))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_alumno(row) for row in rows]
         finally:
             cursor.close()
@@ -126,6 +128,7 @@ class AlumnoRepositoryPostgres(AlumnoRepositoryBase):
         try:
             cursor.execute(query, (cohorte,))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_alumno(row) for row in rows]
         finally:
             cursor.close()

@@ -52,6 +52,7 @@ class TrabajoPracticoRepositoryPostgres(TrabajoPracticoRepositoryBase):
         try:
             cursor.execute(query, (id,))
             row = cursor.fetchone()
+            self.conexion.commit()
             return self._row_to_tp(row) if row else None
         finally:
             cursor.close()
@@ -63,6 +64,7 @@ class TrabajoPracticoRepositoryPostgres(TrabajoPracticoRepositoryBase):
         try:
             cursor.execute(query, (curso_id,))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_tp(row) for row in rows]
         finally:
             cursor.close()
