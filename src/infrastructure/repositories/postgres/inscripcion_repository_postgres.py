@@ -53,6 +53,7 @@ class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
         try:
             cursor.execute(query, (id,))
             row = cursor.fetchone()
+            self.conexion.commit()
             return self._row_to_inscripcion(row) if row else None
         finally:
             cursor.close()
@@ -64,6 +65,7 @@ class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
         try:
             cursor.execute(query, (alumno_id,))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_inscripcion(row) for row in rows]
         finally:
             cursor.close()
@@ -75,6 +77,7 @@ class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
         try:
             cursor.execute(query, (curso_id,))
             rows = cursor.fetchall()
+            self.conexion.commit()
             return [self._row_to_inscripcion(row) for row in rows]
         finally:
             cursor.close()
@@ -85,7 +88,9 @@ class InscripcionRepositoryPostgres(InscripcionRepositoryBase):
         cursor = self.conexion.cursor()
         try:
             cursor.execute(query, (alumno_id, curso_id))
-            return cursor.fetchone() is not None
+            result = cursor.fetchone() is not None
+            self.conexion.commit()
+            return result
         finally:
             cursor.close()
 

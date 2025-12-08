@@ -1315,8 +1315,12 @@ async function crearAlumno() {
 
             loadAdminAlumnos();
         } else {
-            const error = await response.json();
-            showToast(error.detail || 'Error al guardar', 'error');
+            const errorData = await response.json();
+            let errorMsg = 'Error al guardar';
+            if (errorData.detail) {
+                errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+            }
+            showToast(errorMsg, 'error');
         }
     } catch (error) {
         showToast('Error al guardar alumno', 'error');
@@ -1452,10 +1456,15 @@ async function guardarTP() {
             closeModal('modal-tp');
             loadAdminTPs();
         } else {
-            const error = await response.json();
-            showToast(error.detail || 'Error al guardar', 'error');
+            const errorData = await response.json();
+            let errorMsg = 'Error al guardar TP';
+            if (errorData.detail) {
+                errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+            }
+            showToast(errorMsg, 'error');
         }
     } catch (error) {
+        console.error('Error guardarTP:', error);
         showToast('Error al guardar TP', 'error');
     }
 }
@@ -1665,8 +1674,12 @@ async function agregarInscripcion() {
             document.getElementById('inscripcion-curso').value = '';
             await cargarInscripcionesAlumno(alumnoId);
         } else {
-            const error = await response.json();
-            showToast(error.detail || 'Error al inscribir', 'error');
+            const errorData = await response.json();
+            let errorMsg = 'Error al inscribir';
+            if (errorData.detail) {
+                errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+            }
+            showToast(errorMsg, 'error');
         }
     } catch (error) {
         showToast('Error al agregar inscripción', 'error');
