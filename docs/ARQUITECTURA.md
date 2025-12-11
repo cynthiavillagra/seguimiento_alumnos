@@ -286,7 +286,7 @@ GROUP BY et.alumno_id, tp.curso_id;
 
 ### Endpoints Implementados
 
-#### GET /health
+#### GET /api/health
 Health check del sistema.
 
 **Response:**
@@ -299,25 +299,25 @@ Health check del sistema.
 
 ---
 
-#### GET /cursos (o /clases)
-Lista todos los cursos con estadísticas.
+#### GET /api/cursos/con-stats
+**Endpoint optimizado** para el dashboard. Devuelve cursos con estadísticas calculadas en el servidor.
 
 **Response:**
 ```json
 {
   "total": 3,
-  "clases": [
+  "cursos": [
     {
       "id": 1,
-      "materia": "Programación I",
-      "cohorte": 2024,
+      "nombre_materia": "Programación I",
+      "anio": 2024,
       "cuatrimestre": 2,
-      "docente": "Prof. García",
+      "docente_responsable": "Prof. García",
       "totalAlumnos": 8,
       "asistenciaPromedio": 85,
       "alumnosEnRiesgo": 2,
       "totalClases": 15,
-      "ultimaClase": "2024-12-07"
+      "ultimaClase": "07/12/2024"
     }
   ]
 }
@@ -325,7 +325,48 @@ Lista todos los cursos con estadísticas.
 
 ---
 
-#### GET /alumnos
+#### GET /api/alertas
+**Endpoint optimizado** para alertas. Calcula alertas de riesgo en el servidor.
+
+**Criterios de riesgo:**
+- 2 ausencias consecutivas
+- 2 TPs consecutivos no entregados o desaprobados (nota < 6)
+
+**Response:**
+```json
+{
+  "alertas": [
+    {
+      "alumno": {
+        "id": 2,
+        "nombre_completo": "García, Ana"
+      },
+      "curso": {
+        "id": 1,
+        "nombre_materia": "Programación I",
+        "anio": 2024
+      },
+      "motivos": [
+        {
+          "tipo": "asistencia",
+          "mensaje": "2 ausencias consecutivas (05/12/2024 y 07/12/2024)",
+          "icono": "❌"
+        }
+      ],
+      "nivel": "medium"
+    }
+  ],
+  "resumen": {
+    "total": 2,
+    "high": 1,
+    "medium": 1
+  }
+}
+```
+
+---
+
+#### GET /api/alumnos
 Lista todos los alumnos.
 
 **Response:**
@@ -348,32 +389,6 @@ Lista todos los alumnos.
 
 ---
 
-#### GET /alertas
-Alertas de alumnos en riesgo.
-
-**Response:**
-```json
-{
-  "total": 2,
-  "alertas": [
-    {
-      "tipo": "faltas_consecutivas",
-      "nivel": "alto",
-      "alumno": {
-        "id": 2,
-        "nombre": "García, Ana"
-      },
-      "curso": {
-        "id": 1,
-        "materia": "Programación I"
-      },
-      "mensaje": "2 faltas consecutivas (05/12 y 07/12)"
-    }
-  ]
-}
-```
-
----
 
 ## 🎨 Frontend (SPA)
 

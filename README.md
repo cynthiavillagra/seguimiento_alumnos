@@ -4,12 +4,14 @@ Sistema web para el seguimiento académico de estudiantes, diseñado para facili
 
 ## 🚀 Características Principales
 
-- ✅ **Dashboard Multi-Clase**: Vista general de todos los cursos con estadísticas en tiempo real
+- ✅ **Dashboard Multi-Clase**: Vista general de todos los cursos con estadísticas en tiempo real (alumnos, clases, asistencia)
 - ✅ **Registro Completo de Clase**: Asistencia, participación, TPs, notas y actitud
 - ✅ **Ficha Individual de Alumno**: Historial completo con indicadores de rendimiento
-- ✅ **Alertas Automáticas**: Detección de alumnos en riesgo
+- ✅ **Alertas Dinámicas**: Detección automática de alumnos en riesgo (2 ausencias consecutivas, TPs no entregados)
+- ✅ **API Optimizada**: Endpoints eficientes que calculan estadísticas en el servidor
 - ✅ **Búsqueda y Filtros**: Encuentra rápidamente alumnos y clases
 - ✅ **Diseño Responsive**: Funciona en desktop, tablet y móvil
+
 
 ## 🛠️ Tecnologías
 
