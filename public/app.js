@@ -2373,16 +2373,14 @@ async function eliminarInscripcion(inscripcionId) {
 }
 
 // ============================================================================
-// SISTEMA DE ALERTAS DINÁMICAS
+// SISTEMA DE ALERTAS DINÁMICAS (OPTIMIZADO)
 // ============================================================================
 
 // Estado global de alertas
 let alertasData = [];
 
 /**
- * Carga todas las alertas dinámicamente basándose en:
- * - 2 ausencias consecutivas
- * - 2 TPs consecutivos no entregados o desaprobados
+ * Carga todas las alertas usando el endpoint optimizado del backend.
  */
 async function cargarAlertas() {
     const container = document.getElementById('alertas-container');
@@ -2391,247 +2389,73 @@ async function cargarAlertas() {
     if (!container) return;
 
     container.innerHTML = '<div class="loading-alertas"><p>⏳ Analizando asistencias y entregas...</p></div>';
-    emptyState.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'none';
 
     try {
-        // Obtener todos los cursos
-        const cursosRes = await fetch(`${API_URL}/cursos/`);
-        const cursosData = await cursosRes.json();
-        const cursos = cursosData.cursos || [];
+        const response = await fetch(`${API_URL}/alertas/`);
 
-        if (cursos.length === 0) {
-            mostrarAlertasVacio('No hay cursos registrados');
-            return;
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
+
+        const data = await response.json();
+        alertasData = data.alertas || [];
 
         // Llenar filtro de cursos
-        llenarFiltroCursos(cursos);
-
-        // Obtener todos los alumnos
-        const alumnosRes = await fetch(`${API_URL}/alumnos/`);
-        const alumnosData = await alumnosRes.json();
-        const alumnos = alumnosData.alumnos || [];
-
-        // Crear mapa de alumnos para acceso rápido
-        const alumnosMap = {};
-        alumnos.forEach(a => alumnosMap[a.id] = a);
-
-        // Array para almacenar todas las alertas
-        alertasData = [];
-
-        // Para cada curso, analizar alumnos inscriptos
-        for (const curso of cursos) {
-            // Obtener inscripciones del curso
-            const inscripcionesRes = await fetch(`${API_URL}/inscripciones/curso/${curso.id}`);
-            let inscripciones = [];
-            if (inscripcionesRes.ok) {
-                inscripciones = await inscripcionesRes.json();
+        const cursosUnicos = [];
+        const cursosIds = new Set();
+        alertasData.forEach(a => {
+            if (!cursosIds.has(a.curso.id)) {
+                cursosIds.add(a.curso.id);
+                cursosUnicos.push(a.curso);
             }
+        });
+        llenarFiltroCursos(cursosUnicos);
 
-            // Obtener clases del curso ordenadas por fecha
-            const clasesRes = await fetch(`${API_URL}/clases/curso/${curso.id}`);
-            let clases = [];
-            if (clasesRes.ok) {
-                clases = await clasesRes.json();
-                clases.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-            }
-
-            // Obtener TPs del curso
-            const tpsRes = await fetch(`${API_URL}/tps/curso/${curso.id}`);
-            let tps = [];
-            if (tpsRes.ok) {
-                tps = await tpsRes.json();
-                tps.sort((a, b) => new Date(a.fecha_entrega) - new Date(b.fecha_entrega));
-            }
-
-            // Analizar cada alumno inscripto
-            for (const inscripcion of inscripciones) {
-                const alumno = alumnosMap[inscripcion.alumno_id];
-                if (!alumno) continue;
-
-                const motivos = [];
-
-                // Verificar ausencias consecutivas
-                if (clases.length >= 2) {
-                    const alertaAsistencia = await verificarAusenciasConsecutivas(
-                        alumno.id,
-                        clases
-                    );
-                    if (alertaAsistencia) {
-                        motivos.push(alertaAsistencia);
-                    }
-                }
-
-                // Verificar TPs no entregados/desaprobados consecutivos
-                if (tps.length >= 2) {
-                    const alertaTP = await verificarTPsConsecutivos(
-                        alumno.id,
-                        tps
-                    );
-                    if (alertaTP) {
-                        motivos.push(alertaTP);
-                    }
-                }
-
-                // Si hay motivos, crear alerta
-                if (motivos.length > 0) {
-                    alertasData.push({
-                        alumno: alumno,
-                        curso: curso,
-                        motivos: motivos,
-                        nivel: motivos.length >= 2 ? 'high' : 'medium'
-                    });
-                }
-            }
-        }
-
-        // Renderizar alertas
         renderizarAlertas(alertasData);
 
     } catch (error) {
         console.error('Error cargando alertas:', error);
-        // Mostrar estado vacío con mensaje de error amigable
         container.innerHTML = '';
-        emptyState.style.display = 'block';
-        const emptyContent = emptyState.querySelector('.empty-state');
-        if (emptyContent) {
-            emptyContent.innerHTML = `
-                <span class="empty-icon">⚠️</span>
-                <h3>No se pudieron cargar las alertas</h3>
-                <p>Hubo un error al analizar los datos. Intenta nuevamente.</p>
-                <button class="btn-primary" onclick="cargarAlertas()" style="margin-top: 1rem;">
-                    🔄 Reintentar
-                </button>
-            `;
-        }
-    }
-}
-
-/**
- * Verifica si un alumno tiene 2 ausencias consecutivas
- */
-async function verificarAusenciasConsecutivas(alumnoId, clases) {
-    // Obtener asistencias del alumno para cada clase
-    const asistencias = [];
-
-    for (const clase of clases) {
-        try {
-            const res = await fetch(`${API_URL}/asistencias/clase/${clase.id}`);
-            if (res.ok) {
-                const registros = await res.json();
-                const registro = registros.find(r => r.alumno_id === alumnoId);
-                asistencias.push({
-                    clase: clase,
-                    estado: registro ? registro.estado : 'Sin registro'
-                });
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            const emptyContent = emptyState.querySelector('.empty-state');
+            if (emptyContent) {
+                emptyContent.innerHTML = `
+                    <span class="empty-icon">⚠️</span>
+                    <h3>No se pudieron cargar las alertas</h3>
+                    <p>Hubo un error al analizar los datos.</p>
+                    <button class="btn-primary" onclick="cargarAlertas()" style="margin-top: 1rem;">
+                        🔄 Reintentar
+                    </button>
+                `;
             }
-        } catch (e) {
-            console.error('Error obteniendo asistencia:', e);
         }
     }
-
-    // Buscar 2 ausencias consecutivas (empezando desde las más recientes)
-    for (let i = asistencias.length - 1; i >= 1; i--) {
-        const actual = asistencias[i].estado;
-        const anterior = asistencias[i - 1].estado;
-
-        if (actual === 'Ausente' && anterior === 'Ausente') {
-            const fechaActual = new Date(asistencias[i].clase.fecha).toLocaleDateString('es-AR');
-            const fechaAnterior = new Date(asistencias[i - 1].clase.fecha).toLocaleDateString('es-AR');
-
-            return {
-                tipo: 'asistencia',
-                mensaje: `2 ausencias consecutivas (${fechaAnterior} y ${fechaActual})`,
-                icono: '❌'
-            };
-        }
-    }
-
-    return null;
 }
 
-/**
- * Verifica si un alumno tiene 2 TPs consecutivos sin entregar o desaprobados
- */
-async function verificarTPsConsecutivos(alumnoId, tps) {
-    const entregas = [];
-
-    for (const tp of tps) {
-        try {
-            const res = await fetch(`${API_URL}/entregas/tp/${tp.id}`);
-            if (res.ok) {
-                const registros = await res.json();
-                const entrega = registros.find(e => e.alumno_id === alumnoId);
-
-                // Determinar si es problemático: no entregado, desaprobado (nota < 6) o entregado tarde
-                let esProblematico = false;
-                let motivo = '';
-
-                if (!entrega) {
-                    esProblematico = true;
-                    motivo = 'No entregado';
-                } else if (entrega.nota !== null && entrega.nota < 6) {
-                    esProblematico = true;
-                    motivo = `Desaprobado (${entrega.nota})`;
-                } else if (!entrega.entregado) {
-                    esProblematico = true;
-                    motivo = 'No entregado';
-                }
-
-                entregas.push({
-                    tp: tp,
-                    esProblematico: esProblematico,
-                    motivo: motivo
-                });
-            }
-        } catch (e) {
-            console.error('Error obteniendo entrega:', e);
-        }
-    }
-
-    // Buscar 2 TPs problemáticos consecutivos (desde los más recientes)
-    for (let i = entregas.length - 1; i >= 1; i--) {
-        if (entregas[i].esProblematico && entregas[i - 1].esProblematico) {
-            return {
-                tipo: 'tp',
-                mensaje: `2 TPs consecutivos con problemas: ${entregas[i - 1].tp.titulo} (${entregas[i - 1].motivo}) y ${entregas[i].tp.titulo} (${entregas[i].motivo})`,
-                icono: '📝'
-            };
-        }
-    }
-
-    return null;
-}
-
-/**
- * Renderiza las alertas en el contenedor
- */
 function renderizarAlertas(alertas) {
     const container = document.getElementById('alertas-container');
     const emptyState = document.getElementById('empty-alertas');
 
-    // Actualizar contadores
     const alertasHigh = alertas.filter(a => a.nivel === 'high').length;
     const alertasMedium = alertas.filter(a => a.nivel === 'medium').length;
 
-    document.getElementById('count-alertas-high').textContent = alertasHigh;
-    document.getElementById('count-alertas-medium').textContent = alertasMedium;
-    document.getElementById('count-alertas-total').textContent = alertas.length;
+    const countHigh = document.getElementById('count-alertas-high');
+    const countMedium = document.getElementById('count-alertas-medium');
+    const countTotal = document.getElementById('count-alertas-total');
+
+    if (countHigh) countHigh.textContent = alertasHigh;
+    if (countMedium) countMedium.textContent = alertasMedium;
+    if (countTotal) countTotal.textContent = alertas.length;
 
     if (alertas.length === 0) {
         container.innerHTML = '';
-        emptyState.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'block';
         return;
     }
 
-    emptyState.style.display = 'none';
-
-    // Ordenar por nivel (high primero)
-    alertas.sort((a, b) => {
-        if (a.nivel === 'high' && b.nivel !== 'high') return -1;
-        if (a.nivel !== 'high' && b.nivel === 'high') return 1;
-        return 0;
-    });
+    if (emptyState) emptyState.style.display = 'none';
 
     container.innerHTML = alertas.map(alerta => {
         const nivelTexto = alerta.nivel === 'high' ? 'Riesgo Alto' : 'Riesgo Medio';
@@ -2669,14 +2493,10 @@ function renderizarAlertas(alertas) {
     }).join('');
 }
 
-/**
- * Llena el filtro de cursos
- */
 function llenarFiltroCursos(cursos) {
     const select = document.getElementById('filtro-curso-alerta');
     if (!select) return;
 
-    // Mantener la opción "todos"
     select.innerHTML = '<option value="todos">Todos los cursos</option>';
 
     cursos.forEach(curso => {
@@ -2687,23 +2507,18 @@ function llenarFiltroCursos(cursos) {
     });
 }
 
-/**
- * Filtra las alertas según los filtros seleccionados
- */
 function filtrarAlertas() {
-    const tipoFiltro = document.getElementById('filtro-tipo-alerta').value;
-    const cursoFiltro = document.getElementById('filtro-curso-alerta').value;
+    const tipoFiltro = document.getElementById('filtro-tipo-alerta')?.value || 'todas';
+    const cursoFiltro = document.getElementById('filtro-curso-alerta')?.value || 'todos';
 
     let alertasFiltradas = [...alertasData];
 
-    // Filtrar por tipo
     if (tipoFiltro !== 'todas') {
         alertasFiltradas = alertasFiltradas.filter(a =>
             a.motivos.some(m => m.tipo === tipoFiltro)
         );
     }
 
-    // Filtrar por curso
     if (cursoFiltro !== 'todos') {
         alertasFiltradas = alertasFiltradas.filter(a =>
             a.curso.id == cursoFiltro
@@ -2713,22 +2528,22 @@ function filtrarAlertas() {
     renderizarAlertas(alertasFiltradas);
 }
 
-/**
- * Muestra el estado vacío con mensaje personalizado
- */
 function mostrarAlertasVacio(mensaje) {
     const container = document.getElementById('alertas-container');
     const emptyState = document.getElementById('empty-alertas');
 
-    container.innerHTML = '';
-    emptyState.style.display = 'block';
+    if (container) container.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'block';
 
-    document.getElementById('count-alertas-high').textContent = '0';
-    document.getElementById('count-alertas-medium').textContent = '0';
-    document.getElementById('count-alertas-total').textContent = '0';
+    const countHigh = document.getElementById('count-alertas-high');
+    const countMedium = document.getElementById('count-alertas-medium');
+    const countTotal = document.getElementById('count-alertas-total');
+
+    if (countHigh) countHigh.textContent = '0';
+    if (countMedium) countMedium.textContent = '0';
+    if (countTotal) countTotal.textContent = '0';
 }
 
 // Exponer funciones globalmente
 window.cargarAlertas = cargarAlertas;
 window.filtrarAlertas = filtrarAlertas;
-
