@@ -78,11 +78,13 @@ def listar_entregas_tp(
     try:
         entregas = service.listar_entregas_tp(tp_id)
         return [EntregaResponseSchema.from_entity(e) for e in entregas]
-    except TrabajoPracticoNoEncontradoException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except TrabajoPracticoNoEncontradoException:
+        # Si el TP no existe, devolver lista vacía (más amigable para el frontend)
+        return []
     except Exception as e:
         print(f"Error inesperado al listar entregas: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+        # Devolver lista vacía en lugar de 500 para no bloquear el frontend
+        return []
 
 @router.delete(
     "/{entrega_id}",

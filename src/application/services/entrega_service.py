@@ -85,8 +85,8 @@ class EntregaTPService:
         return self.entrega_repo.obtener_por_alumno_y_tp(alumno_id, tp_id)
     
     def listar_entregas_tp(self, tp_id: int) -> List[EntregaTP]:
-        if not self.tp_repo.obtener_por_id(tp_id):
-            raise TrabajoPracticoNoEncontradoException(f"TP {tp_id} no encontrado")
+        # No lanzar excepción si el TP no existe, simplemente devolver lista vacía
+        # Esto es más amigable para el frontend en el sistema de alertas
         return self.entrega_repo.obtener_por_tp(tp_id)
 
     def eliminar_entrega(self, id: int) -> bool:
