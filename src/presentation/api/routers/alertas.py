@@ -148,7 +148,9 @@ def verificar_ausencias_consecutivas(cursor, alumno_id: int, clases: list) -> di
     
     # Buscar 2 ausencias consecutivas (desde las más recientes)
     for i in range(len(asistencias) - 1, 0, -1):
-        if asistencias[i]["estado"] == "Ausente" and asistencias[i-1]["estado"] == "Ausente":
+        estado_actual = (asistencias[i]["estado"] or "").lower()
+        estado_anterior = (asistencias[i-1]["estado"] or "").lower()
+        if estado_actual == "ausente" and estado_anterior == "ausente":
             fecha1 = asistencias[i-1]["fecha"].strftime("%d/%m/%Y") if hasattr(asistencias[i-1]["fecha"], 'strftime') else str(asistencias[i-1]["fecha"])
             fecha2 = asistencias[i]["fecha"].strftime("%d/%m/%Y") if hasattr(asistencias[i]["fecha"], 'strftime') else str(asistencias[i]["fecha"])
             return {

@@ -65,7 +65,7 @@ def listar_cursos_con_stats():
             if total_clases > 0 and total_alumnos > 0:
                 cursor.execute("""
                     SELECT 
-                        COUNT(CASE WHEN ra.estado IN ('Presente', 'Tarde') THEN 1 END) as presentes,
+                        COUNT(CASE WHEN LOWER(ra.estado) IN ('presente', 'tarde', 'tardanza') THEN 1 END) as presentes,
                         COUNT(*) as total
                     FROM registro_asistencia ra
                     JOIN clase cl ON ra.clase_id = cl.id
@@ -117,7 +117,9 @@ def listar_cursos_con_stats():
                         
                         # Buscar 2 ausencias consecutivas
                         for i in range(len(asistencias) - 1, 0, -1):
-                            if asistencias[i] == 'Ausente' and asistencias[i-1] == 'Ausente':
+                            estado_actual = (asistencias[i] or '').lower()
+                            estado_anterior = (asistencias[i-1] or '').lower()
+                            if estado_actual == 'ausente' and estado_anterior == 'ausente':
                                 es_riesgo = True
                                 break
                     
