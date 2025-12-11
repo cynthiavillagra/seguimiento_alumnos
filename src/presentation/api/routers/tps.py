@@ -63,24 +63,6 @@ def crear_tp(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
 @router.get(
-    "/{tp_id}",
-    response_model=TPResponseSchema,
-    summary="Obtener TP por ID"
-)
-def obtener_tp(
-    tp_id: int,
-    service: TrabajoPracticoService = Depends(get_tp_service)
-):
-    try:
-        tp = service.obtener_tp(tp_id)
-        return TPResponseSchema.from_entity(tp)
-    except TrabajoPracticoNoEncontradoException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        print(f"Error inesperado al obtener TP: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
-
-@router.get(
     "/",
     response_model=List[TPResponseSchema],
     summary="Listar todos los TPs"
@@ -96,6 +78,7 @@ def listar_todos_tps(
         print(f"Error inesperado al listar TPs: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
+# IMPORTANTE: Esta ruta debe estar ANTES de /{tp_id} para evitar que "curso" sea interpretado como tp_id
 @router.get(
     "/curso/{curso_id}",
     response_model=List[TPResponseSchema],
@@ -112,6 +95,24 @@ def listar_tps_curso(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         print(f"Error inesperado al listar TPs: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+
+@router.get(
+    "/{tp_id}",
+    response_model=TPResponseSchema,
+    summary="Obtener TP por ID"
+)
+def obtener_tp(
+    tp_id: int,
+    service: TrabajoPracticoService = Depends(get_tp_service)
+):
+    try:
+        tp = service.obtener_tp(tp_id)
+        return TPResponseSchema.from_entity(tp)
+    except TrabajoPracticoNoEncontradoException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        print(f"Error inesperado al obtener TP: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
 @router.put(
@@ -159,3 +160,4 @@ def eliminar_tp(
     except Exception as e:
         print(f"Error inesperado al eliminar TP: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+
