@@ -123,6 +123,10 @@ app.include_router(participaciones.router, prefix=api_prefix)
 app.include_router(tps.router, prefix=api_prefix)
 app.include_router(entregas.router, prefix=api_prefix)
 
+# Router de alertas optimizado
+from src.presentation.api.routers import alertas
+app.include_router(alertas.router, prefix=api_prefix)
+
 # ============================================================================
 # Servir Archivos Estáticos (Frontend)
 # ============================================================================
