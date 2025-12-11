@@ -144,61 +144,7 @@ async function loadDashboardData() {
 
         console.log('Cursos recibidos:', data);
 
-        let cursos = data.cursos || [];
-
-        // Enriquecer cursos con estadísticas
-        for (const curso of cursos) {
-            try {
-                // Obtener inscripciones del curso
-                const inscRes = await fetch(`${API_URL}/inscripciones/curso/${curso.id}`);
-                const inscripciones = inscRes.ok ? await inscRes.json() : [];
-                curso.totalAlumnos = inscripciones.length;
-
-                // Obtener clases del curso
-                const clasesRes = await fetch(`${API_URL}/clases/curso/${curso.id}`);
-                const clases = clasesRes.ok ? await clasesRes.json() : [];
-                curso.totalClases = clases.length;
-
-                // Calcular asistencia promedio si hay clases
-                if (clases.length > 0 && inscripciones.length > 0) {
-                    let totalPresentes = 0;
-                    let totalRegistros = 0;
-
-                    for (const clase of clases) {
-                        const asistRes = await fetch(`${API_URL}/asistencias/clase/${clase.id}`);
-                        if (asistRes.ok) {
-                            const asistencias = await asistRes.json();
-                            totalRegistros += asistencias.length;
-                            totalPresentes += asistencias.filter(a => a.estado === 'Presente' || a.estado === 'Tarde').length;
-                        }
-                    }
-
-                    curso.asistenciaPromedio = totalRegistros > 0
-                        ? Math.round((totalPresentes / totalRegistros) * 100)
-                        : 0;
-                } else {
-                    curso.asistenciaPromedio = 0;
-                }
-
-                // Calcular alumnos en riesgo (simplificado: asistencia < 70%)
-                curso.alumnosEnRiesgo = 0; // Por ahora 0, se calculará en alertas
-
-                // Última clase
-                if (clases.length > 0) {
-                    const ordenadas = clases.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-                    curso.ultimaClase = new Date(ordenadas[0].fecha).toLocaleDateString('es-AR');
-                }
-
-            } catch (e) {
-                console.error(`Error cargando stats para curso ${curso.id}:`, e);
-                curso.totalAlumnos = 0;
-                curso.totalClases = 0;
-                curso.asistenciaPromedio = 0;
-                curso.alumnosEnRiesgo = 0;
-            }
-        }
-
-        state.clases = cursos;
+        state.clases = data.cursos || [];
         renderClasesCards(state.clases);
 
         // Cargar últimas clases registradas de todos los cursos
