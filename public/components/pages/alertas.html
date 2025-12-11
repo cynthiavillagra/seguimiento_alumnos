@@ -1,33 +1,74 @@
 <!-- Alertas Page -->
 <div id="page-alertas" class="page">
     <div class="page-header">
-        <h1>Alertas de Riesgo</h1>
-        <p class="subtitle">Alumnos que requieren atención</p>
+        <div>
+            <h1>Alertas de Riesgo</h1>
+            <p class="subtitle">Alumnos que requieren atención basado en asistencias y entregas</p>
+        </div>
+        <button class="btn-secondary" onclick="cargarAlertas()">
+            🔄 Actualizar Alertas
+        </button>
     </div>
 
-    <div class="alerts-container">
-        <div class="alert-card high">
-            <div class="alert-header">
-                <span class="alert-icon">🚨</span>
-                <span class="alert-level">Riesgo Alto</span>
-            </div>
-            <div class="alert-content">
-                <h3>García, Ana</h3>
-                <p>Asistencia: 55% | TPs: 40% | Participación: Baja</p>
-                <button class="btn-sm" onclick="verFichaAlumno(1)">Ver Ficha Completa</button>
+    <!-- Filtros de alertas -->
+    <div class="alertas-filtros">
+        <div class="filtro-group">
+            <label>Filtrar por tipo:</label>
+            <select id="filtro-tipo-alerta" onchange="filtrarAlertas()">
+                <option value="todas">Todas las alertas</option>
+                <option value="asistencia">Solo Asistencia</option>
+                <option value="tps">Solo TPs</option>
+            </select>
+        </div>
+        <div class="filtro-group">
+            <label>Filtrar por curso:</label>
+            <select id="filtro-curso-alerta" onchange="filtrarAlertas()">
+                <option value="todos">Todos los cursos</option>
+                <!-- Se llena dinámicamente -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Resumen de alertas -->
+    <div class="alertas-resumen" id="alertas-resumen">
+        <div class="resumen-card high">
+            <span class="resumen-icon">🚨</span>
+            <div class="resumen-info">
+                <span class="resumen-count" id="count-alertas-high">0</span>
+                <span class="resumen-label">Riesgo Alto</span>
             </div>
         </div>
+        <div class="resumen-card medium">
+            <span class="resumen-icon">⚠️</span>
+            <div class="resumen-info">
+                <span class="resumen-count" id="count-alertas-medium">0</span>
+                <span class="resumen-label">Riesgo Medio</span>
+            </div>
+        </div>
+        <div class="resumen-card low">
+            <span class="resumen-icon">📋</span>
+            <div class="resumen-info">
+                <span class="resumen-count" id="count-alertas-total">0</span>
+                <span class="resumen-label">Total Alertas</span>
+            </div>
+        </div>
+    </div>
 
-        <div class="alert-card medium">
-            <div class="alert-header">
-                <span class="alert-icon">⚠️</span>
-                <span class="alert-level">Riesgo Medio</span>
-            </div>
-            <div class="alert-content">
-                <h3>López, Carlos</h3>
-                <p>Asistencia: 72% | TPs: 65% | Participación: Media</p>
-                <button class="btn-sm" onclick="verFichaAlumno(2)">Ver Ficha Completa</button>
-            </div>
+    <!-- Contenedor de alertas dinámicas -->
+    <div class="alerts-container" id="alertas-container">
+        <div class="loading-alertas">
+            <p>⏳ Cargando alertas...</p>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-alertas" id="empty-alertas" style="display: none;">
+        <div class="empty-state">
+            <span class="empty-icon">✅</span>
+            <h3>¡Sin alertas!</h3>
+            <p>No hay alumnos con alertas de riesgo actualmente.</p>
+            <p class="empty-hint">Las alertas se activan cuando un alumno tiene 2 ausencias consecutivas o 2 TPs sin
+                entregar/desaprobados consecutivos.</p>
         </div>
     </div>
 </div>
