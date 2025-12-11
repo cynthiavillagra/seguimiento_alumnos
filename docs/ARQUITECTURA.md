@@ -462,8 +462,8 @@ function guardarClase()
 
 ### Variables de Entorno
 
-Configuradas automáticamente por Neon:
-- `DATABASE_URL` - Connection string de PostgreSQL
+Las variables de entorno se configuran en el panel de Vercel. 
+Consulta la documentación de Neon para obtener tu connection string de PostgreSQL.
 
 ---
 

@@ -136,7 +136,8 @@ function loadPageData(pageName) {
 
 async function loadDashboardData() {
     try {
-        const url = `${API_URL}/cursos/`;
+        // Usar endpoint optimizado que incluye estadísticas
+        const url = `${API_URL}/cursos/con-stats`;
         console.log('Cargando cursos desde:', url);
 
         const response = await fetch(url);

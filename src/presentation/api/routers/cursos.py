@@ -26,6 +26,91 @@ router = APIRouter(
     }
 )
 
+@router.get(
+    "/con-stats",
+    summary="Listar cursos con estadísticas",
+    description="Devuelve cursos con total de alumnos, clases y asistencia promedio"
+)
+def listar_cursos_con_stats():
+    """
+    Endpoint optimizado que devuelve cursos con estadísticas calculadas.
+    Usado por el dashboard.
+    """
+    from src.infrastructure.database.connection import get_db_connection
+    
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # Obtener cursos con estadísticas en queries eficientes
+        cursor.execute("""
+            SELECT 
+                c.id,
+                c.nombre_materia,
+                c.anio,
+                c.cuatrimestre,
+                c.docente_responsable,
+                (SELECT COUNT(*) FROM inscripcion i WHERE i.curso_id = c.id) as total_alumnos,
+                (SELECT COUNT(*) FROM clase cl WHERE cl.curso_id = c.id) as total_clases
+            FROM curso c
+            ORDER BY c.anio DESC, c.cuatrimestre DESC, c.nombre_materia
+        """)
+        
+        cursos = []
+        for row in cursor.fetchall():
+            curso_id, nombre, anio, cuatri, docente, total_alumnos, total_clases = row
+            
+            # Calcular asistencia promedio
+            asistencia_promedio = 0
+            if total_clases > 0 and total_alumnos > 0:
+                cursor.execute("""
+                    SELECT 
+                        COUNT(CASE WHEN ra.estado IN ('Presente', 'Tarde') THEN 1 END) as presentes,
+                        COUNT(*) as total
+                    FROM registro_asistencia ra
+                    JOIN clase cl ON ra.clase_id = cl.id
+                    WHERE cl.curso_id = %s
+                """, (curso_id,))
+                stats_row = cursor.fetchone()
+                if stats_row and stats_row[1] > 0:
+                    asistencia_promedio = round((stats_row[0] / stats_row[1]) * 100)
+            
+            # Obtener última clase
+            ultima_clase = None
+            cursor.execute("""
+                SELECT fecha FROM clase 
+                WHERE curso_id = %s 
+                ORDER BY fecha DESC LIMIT 1
+            """, (curso_id,))
+            fecha_row = cursor.fetchone()
+            if fecha_row:
+                ultima_clase = fecha_row[0].strftime("%d/%m/%Y") if hasattr(fecha_row[0], 'strftime') else str(fecha_row[0])
+            
+            cursos.append({
+                "id": curso_id,
+                "nombre_materia": nombre,
+                "anio": anio,
+                "cuatrimestre": cuatri,
+                "docente_responsable": docente,
+                "totalAlumnos": total_alumnos,
+                "totalClases": total_clases,
+                "asistenciaPromedio": asistencia_promedio,
+                "alumnosEnRiesgo": 0,  # Se calcula en /alertas
+                "ultimaClase": ultima_clase
+            })
+        
+        conn.commit()
+        cursor.close()
+        
+        return {"cursos": cursos, "total": len(cursos)}
+        
+    except Exception as e:
+        print(f"Error obteniendo cursos con stats: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"cursos": [], "total": 0, "error": str(e)}
+
+
 def get_curso_service() -> CursoService:
     from src.infrastructure.database.connection import get_db_connection
     from src.infrastructure.repositories.postgres.curso_repository_postgres import CursoRepositoryPostgres
