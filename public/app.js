@@ -2490,7 +2490,20 @@ async function cargarAlertas() {
 
     } catch (error) {
         console.error('Error cargando alertas:', error);
-        container.innerHTML = '<p class="error">Error al cargar alertas</p>';
+        // Mostrar estado vacío con mensaje de error amigable
+        container.innerHTML = '';
+        emptyState.style.display = 'block';
+        const emptyContent = emptyState.querySelector('.empty-state');
+        if (emptyContent) {
+            emptyContent.innerHTML = `
+                <span class="empty-icon">⚠️</span>
+                <h3>No se pudieron cargar las alertas</h3>
+                <p>Hubo un error al analizar los datos. Intenta nuevamente.</p>
+                <button class="btn-primary" onclick="cargarAlertas()" style="margin-top: 1rem;">
+                    🔄 Reintentar
+                </button>
+            `;
+        }
     }
 }
 
