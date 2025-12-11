@@ -27,6 +27,49 @@ router = APIRouter(
 )
 
 @router.get(
+    "/debug-asistencia",
+    summary="Debug: Ver datos de asistencia"
+)
+def debug_asistencia():
+    """Endpoint temporal para debug de asistencia"""
+    from src.infrastructure.database.connection import get_db_connection
+    
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        
+        # Ver cuántos registros hay
+        cursor.execute("SELECT COUNT(*) FROM registro_asistencia")
+        total_registros = cursor.fetchone()[0]
+        
+        # Ver los primeros 10 registros
+        cursor.execute("""
+            SELECT ra.id, ra.alumno_id, ra.clase_id, ra.estado, cl.curso_id
+            FROM registro_asistencia ra
+            JOIN clase cl ON ra.clase_id = cl.id
+            LIMIT 10
+        """)
+        registros = cursor.fetchall()
+        
+        # Ver estados únicos
+        cursor.execute("SELECT DISTINCT estado FROM registro_asistencia")
+        estados_unicos = [r[0] for r in cursor.fetchall()]
+        
+        cursor.close()
+        
+        return {
+            "total_registros": total_registros,
+            "estados_unicos": estados_unicos,
+            "primeros_10": [
+                {"id": r[0], "alumno_id": r[1], "clase_id": r[2], "estado": r[3], "curso_id": r[4]}
+                for r in registros
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.get(
     "/con-stats",
     summary="Listar cursos con estadísticas",
     description="Devuelve cursos con total de alumnos, clases y asistencia promedio"
