@@ -86,6 +86,46 @@ def listar_cursos_con_stats():
             if fecha_row:
                 ultima_clase = fecha_row[0].strftime("%d/%m/%Y") if hasattr(fecha_row[0], 'strftime') else str(fecha_row[0])
             
+            # Calcular alumnos en riesgo (simplificado)
+            alumnos_en_riesgo = 0
+            try:
+                # Obtener alumnos inscriptos
+                cursor.execute("""
+                    SELECT alumno_id FROM inscripcion WHERE curso_id = %s
+                """, (curso_id,))
+                alumnos_inscritos = [r[0] for r in cursor.fetchall()]
+                
+                # Obtener clases ordenadas
+                cursor.execute("""
+                    SELECT id FROM clase WHERE curso_id = %s ORDER BY fecha ASC
+                """, (curso_id,))
+                clases_ids = [r[0] for r in cursor.fetchall()]
+                
+                for alumno_id in alumnos_inscritos:
+                    es_riesgo = False
+                    
+                    # Verificar 2 ausencias consecutivas
+                    if len(clases_ids) >= 2:
+                        asistencias = []
+                        for clase_id in clases_ids:
+                            cursor.execute("""
+                                SELECT estado FROM registro_asistencia 
+                                WHERE alumno_id = %s AND clase_id = %s
+                            """, (alumno_id, clase_id))
+                            r = cursor.fetchone()
+                            asistencias.append(r[0] if r else None)
+                        
+                        # Buscar 2 ausencias consecutivas
+                        for i in range(len(asistencias) - 1, 0, -1):
+                            if asistencias[i] == 'Ausente' and asistencias[i-1] == 'Ausente':
+                                es_riesgo = True
+                                break
+                    
+                    if es_riesgo:
+                        alumnos_en_riesgo += 1
+            except:
+                pass  # En caso de error, dejamos en 0
+            
             cursos.append({
                 "id": curso_id,
                 "nombre_materia": nombre,
@@ -95,7 +135,7 @@ def listar_cursos_con_stats():
                 "totalAlumnos": total_alumnos,
                 "totalClases": total_clases,
                 "asistenciaPromedio": asistencia_promedio,
-                "alumnosEnRiesgo": 0,  # Se calcula en /alertas
+                "alumnosEnRiesgo": alumnos_en_riesgo,
                 "ultimaClase": ultima_clase
             })
         
